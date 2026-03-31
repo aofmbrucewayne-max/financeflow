@@ -190,29 +190,14 @@ export default function DashboardPage() {
           <h1 className="text-xl md:text-2xl font-bold" style={{ color: '#e8e8f0' }}>Dashboard</h1>
           <p className="text-xs mt-0.5" style={{ color: '#8888a0' }}>Your financial overview</p>
         </div>
-        {/* Add buttons — icon only on mobile, icon+label on desktop */}
-        <div className="flex gap-2 shrink-0">
-          <button
-            onClick={() => { setEditingId(null); setModalOpen(true); }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
-            style={{ backgroundColor: '#ef444420', color: '#ef4444', border: '1px solid #ef444440' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#ef444430'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#ef444420'; }}
-          >
-            <Plus className="w-4 h-4 shrink-0" />
-            <span className="hidden sm:inline">Expense</span>
-          </button>
-          <button
-            onClick={() => { setEditingId(null); setModalOpen(true); }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
-            style={{ backgroundColor: '#22c55e20', color: '#22c55e', border: '1px solid #22c55e40' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#22c55e30'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#22c55e20'; }}
-          >
-            <Plus className="w-4 h-4 shrink-0" />
-            <span className="hidden sm:inline">Income</span>
-          </button>
-        </div>
+        <button
+          onClick={() => { setEditingId(null); setModalOpen(true); }}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90 shrink-0"
+          style={{ background: 'linear-gradient(135deg, #7c3aed, #3b82f6)', color: '#fff' }}
+        >
+          <Plus className="w-4 h-4 shrink-0" />
+          <span className="hidden sm:inline">Add Transaction</span>
+        </button>
       </div>
 
       {/* Stat Cards — 2 col on mobile, 4 on desktop */}
