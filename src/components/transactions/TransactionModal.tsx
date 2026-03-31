@@ -78,7 +78,7 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
   }, [form.accountId, accounts, isEditing]);
 
   const parentCategories = allCategories?.filter(
-    (c) => c.parentId === null && c.type === form.type && form.type !== 'transfer',
+    (c) => c.parentId === null && form.type !== 'transfer' && c.type === (form.type as 'income' | 'expense'),
   ) ?? [];
 
   const subcategories = allCategories?.filter(
