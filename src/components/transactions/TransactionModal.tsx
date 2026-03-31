@@ -32,6 +32,18 @@ const defaultForm = {
   tags: '' as string,
 };
 
+const inputStyle = {
+  width: '100%',
+  backgroundColor: '#1a1a2e',
+  border: '1px solid #2a2a40',
+  color: '#e8e8f0',
+  borderRadius: '12px',
+  padding: '10px 12px',
+  fontSize: '14px',
+  outline: 'none',
+  boxSizing: 'border-box' as const,
+};
+
 export function TransactionModal({ isOpen, onClose, editingId }: TransactionModalProps) {
   const accounts = useAccounts();
   const allCategories = useCategories();
@@ -40,7 +52,6 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
 
   const isEditing = !!editingId;
 
-  // Load existing transaction for editing
   useEffect(() => {
     if (!isOpen) return;
     if (editingId) {
@@ -68,55 +79,36 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
     }
   }, [isOpen, editingId, accounts]);
 
-  // Sync currency with selected account
   useEffect(() => {
     if (!form.accountId || isEditing) return;
     const account = accounts?.find((a) => a.id === form.accountId);
-    if (account) {
-      setForm((prev) => ({ ...prev, currency: account.currency }));
-    }
+    if (account) setForm((prev) => ({ ...prev, currency: account.currency }));
   }, [form.accountId, accounts, isEditing]);
 
   const parentCategories = allCategories?.filter(
     (c) => c.parentId === null && form.type !== 'transfer' && c.type === (form.type as 'income' | 'expense'),
   ) ?? [];
 
-  const subcategories = allCategories?.filter(
-    (c) => c.parentId === form.categoryId,
-  ) ?? [];
+  const subcategories = allCategories?.filter((c) => c.parentId === form.categoryId) ?? [];
 
   const handleSave = async () => {
     if (!form.amount || isNaN(Number(form.amount)) || Number(form.amount) <= 0) {
-      toast.error('Please enter a valid amount');
-      return;
+      toast.error('Please enter a valid amount'); return;
     }
-    if (!form.accountId) {
-      toast.error('Please select an account');
-      return;
-    }
-    if (form.type !== 'transfer' && !form.categoryId) {
-      toast.error('Please select a category');
-      return;
-    }
-    if (form.type === 'transfer' && !form.toAccountId) {
-      toast.error('Please select a destination account');
-      return;
-    }
+    if (!form.accountId) { toast.error('Please select an account'); return; }
+    if (form.type !== 'transfer' && !form.categoryId) { toast.error('Please select a category'); return; }
+    if (form.type === 'transfer' && !form.toAccountId) { toast.error('Please select a destination account'); return; }
 
     setIsSaving(true);
     try {
       const now = new Date().toISOString();
-      const tags = form.tags
-        .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean);
-
+      const tags = form.tags.split(',').map((t) => t.trim()).filter(Boolean);
       const txData: Transaction = {
         id: editingId ?? uuidv4(),
         type: form.type,
         amount: Number(form.amount),
         currency: form.currency,
-        amountInBase: Number(form.amount), // simplified – same as amount for now
+        amountInBase: Number(form.amount),
         exchangeRate: 1,
         accountId: form.accountId,
         toAccountId: form.type === 'transfer' ? form.toAccountId : undefined,
@@ -129,7 +121,6 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
         createdAt: isEditing ? '' : now,
         updatedAt: now,
       };
-
       if (isEditing) {
         const existing = await db.transactions.get(editingId!);
         txData.createdAt = existing?.createdAt ?? now;
@@ -139,7 +130,6 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
         await db.transactions.add(txData);
         toast.success('Transaction added');
       }
-
       onClose();
     } catch (err) {
       console.error(err);
@@ -159,67 +149,47 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
+      {/* Sheet slides up from bottom on mobile, centered on desktop */}
       <div
-        className="w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden"
-        style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}
+        className="w-full sm:max-w-lg sm:mx-4 sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden"
+        style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40', maxHeight: '92dvh' }}
       >
+        {/* Drag handle (mobile) */}
+        <div className="flex justify-center pt-3 pb-1 sm:hidden">
+          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: '#3a3a55' }} />
+        </div>
+
         {/* Header */}
-        <div
-          className="flex items-center justify-between px-6 py-4"
-          style={{ borderBottom: '1px solid #2a2a40' }}
-        >
+        <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: '1px solid #2a2a40' }}>
           <h2 className="text-base font-semibold" style={{ color: '#e8e8f0' }}>
             {isEditing ? 'Edit Transaction' : 'New Transaction'}
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg transition-colors"
+            className="p-1.5 rounded-lg"
             style={{ color: '#8888a0' }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor = '#22223a';
-              (e.currentTarget as HTMLElement).style.color = '#e8e8f0';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
-              (e.currentTarget as HTMLElement).style.color = '#8888a0';
-            }}
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 space-y-4 max-h-[75vh] overflow-y-auto">
+        <div className="overflow-y-auto px-5 py-4 space-y-4" style={{ maxHeight: 'calc(92dvh - 130px)' }}>
+
           {/* Type Tabs */}
-          <div
-            className="flex rounded-xl p-1"
-            style={{ backgroundColor: '#0a0a0f' }}
-          >
+          <div className="flex rounded-xl p-1 gap-1" style={{ backgroundColor: '#0a0a0f' }}>
             {(['expense', 'income', 'transfer'] as TransactionType[]).map((t) => (
               <button
                 key={t}
-                onClick={() =>
-                  setForm((prev) => ({
-                    ...prev,
-                    type: t,
-                    categoryId: '',
-                    subcategoryId: '',
-                  }))
-                }
-                className="flex-1 py-2 rounded-lg text-sm font-medium capitalize transition-all"
+                onClick={() => setForm((prev) => ({ ...prev, type: t, categoryId: '', subcategoryId: '' }))}
+                className="flex-1 py-2.5 rounded-lg text-sm font-medium capitalize transition-all"
                 style={
                   form.type === t
-                    ? {
-                        backgroundColor: typeColors[t] + '20',
-                        color: typeColors[t],
-                        border: `1px solid ${typeColors[t]}40`,
-                      }
+                    ? { backgroundColor: typeColors[t] + '22', color: typeColors[t], border: `1px solid ${typeColors[t]}44` }
                     : { color: '#8888a0' }
                 }
               >
@@ -228,47 +198,42 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
             ))}
           </div>
 
-          {/* Amount */}
+          {/* Amount — full width input, currency below on same row but fixed */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
-              Amount
-            </label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Amount</label>
             <div className="flex gap-2">
               <input
                 type="number"
+                inputMode="decimal"
                 min="0"
                 step="0.01"
                 placeholder="0.00"
                 value={form.amount}
                 onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))}
-                className="flex-1 px-4 py-3 rounded-xl text-xl font-semibold outline-none transition-colors"
                 style={{
-                  backgroundColor: '#1a1a2e',
-                  border: '1px solid #2a2a40',
+                  ...inputStyle,
+                  flex: 1,
+                  fontSize: '22px',
+                  fontWeight: 700,
+                  padding: '12px 14px',
                   color: typeColors[form.type],
                 }}
-                onFocus={(e) => {
-                  (e.target as HTMLElement).style.borderColor = '#7c3aed';
-                }}
-                onBlur={(e) => {
-                  (e.target as HTMLElement).style.borderColor = '#2a2a40';
-                }}
+                onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
+                onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
               />
               <select
                 value={form.currency}
                 onChange={(e) => setForm((prev) => ({ ...prev, currency: e.target.value }))}
-                className="px-3 py-3 rounded-xl text-sm outline-none"
                 style={{
-                  backgroundColor: '#1a1a2e',
-                  border: '1px solid #2a2a40',
-                  color: '#e8e8f0',
-                  minWidth: '80px',
+                  ...inputStyle,
+                  width: '90px',
+                  flex: 'none',
+                  padding: '12px 10px',
+                  fontWeight: 600,
                 }}
               >
                 {SUPPORTED_CURRENCIES.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.code}
-                  </option>
+                  <option key={c.code} value={c.code}>{c.code}</option>
                 ))}
               </select>
             </div>
@@ -282,103 +247,59 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
             <select
               value={form.accountId}
               onChange={(e) => setForm((prev) => ({ ...prev, accountId: e.target.value }))}
-              className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-              style={{
-                backgroundColor: '#1a1a2e',
-                border: '1px solid #2a2a40',
-                color: '#e8e8f0',
-              }}
+              style={inputStyle}
             >
               <option value="">Select account</option>
               {accounts?.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name} ({a.currency})
-                </option>
+                <option key={a.id} value={a.id}>{a.name} ({a.currency})</option>
               ))}
             </select>
           </div>
 
-          {/* To Account (Transfer only) */}
+          {/* To Account — transfer only */}
           {form.type === 'transfer' && (
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
-                To Account
-              </label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>To Account</label>
               <select
                 value={form.toAccountId}
                 onChange={(e) => setForm((prev) => ({ ...prev, toAccountId: e.target.value }))}
-                className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                style={{
-                  backgroundColor: '#1a1a2e',
-                  border: '1px solid #2a2a40',
-                  color: '#e8e8f0',
-                }}
+                style={inputStyle}
               >
                 <option value="">Select destination account</option>
-                {accounts
-                  ?.filter((a) => a.id !== form.accountId)
-                  .map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.name} ({a.currency})
-                    </option>
-                  ))}
+                {accounts?.filter((a) => a.id !== form.accountId).map((a) => (
+                  <option key={a.id} value={a.id}>{a.name} ({a.currency})</option>
+                ))}
               </select>
             </div>
           )}
 
-          {/* Category & Subcategory */}
+          {/* Category + Subcategory */}
           {form.type !== 'transfer' && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
-                  Category
-                </label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Category</label>
                 <select
                   value={form.categoryId}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      categoryId: e.target.value,
-                      subcategoryId: '',
-                    }))
-                  }
-                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                  style={{
-                    backgroundColor: '#1a1a2e',
-                    border: '1px solid #2a2a40',
-                    color: '#e8e8f0',
-                  }}
+                  onChange={(e) => setForm((prev) => ({ ...prev, categoryId: e.target.value, subcategoryId: '' }))}
+                  style={inputStyle}
                 >
-                  <option value="">Select category</option>
+                  <option value="">Select</option>
                   {parentCategories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.icon} {c.name}
-                    </option>
+                    <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
-                  Subcategory
-                </label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Subcategory</label>
                 <select
                   value={form.subcategoryId}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, subcategoryId: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, subcategoryId: e.target.value }))}
                   disabled={subcategories.length === 0}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none disabled:opacity-50"
-                  style={{
-                    backgroundColor: '#1a1a2e',
-                    border: '1px solid #2a2a40',
-                    color: '#e8e8f0',
-                  }}
+                  style={{ ...inputStyle, opacity: subcategories.length === 0 ? 0.5 : 1 }}
                 >
                   <option value="">None</option>
                   {subcategories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.icon} {c.name}
-                    </option>
+                    <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
                   ))}
                 </select>
               </div>
@@ -387,112 +308,61 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
 
           {/* Date */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
-              Date
-            </label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Date</label>
             <input
               type="date"
               value={form.date}
               onChange={(e) => setForm((prev) => ({ ...prev, date: e.target.value }))}
-              className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-              style={{
-                backgroundColor: '#1a1a2e',
-                border: '1px solid #2a2a40',
-                color: '#e8e8f0',
-                colorScheme: 'dark',
-              }}
+              style={{ ...inputStyle, colorScheme: 'dark' }}
             />
           </div>
 
           {/* Note */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
-              Note
-            </label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Note</label>
             <textarea
               placeholder="Add a note..."
               value={form.note}
               onChange={(e) => setForm((prev) => ({ ...prev, note: e.target.value }))}
               rows={2}
-              className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
-              style={{
-                backgroundColor: '#1a1a2e',
-                border: '1px solid #2a2a40',
-                color: '#e8e8f0',
-              }}
-              onFocus={(e) => {
-                (e.target as HTMLElement).style.borderColor = '#7c3aed';
-              }}
-              onBlur={(e) => {
-                (e.target as HTMLElement).style.borderColor = '#2a2a40';
-              }}
+              style={{ ...inputStyle, resize: 'none' }}
+              onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
+              onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
             />
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
-              Tags (comma-separated)
-            </label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Tags (comma-separated)</label>
             <input
               type="text"
-              placeholder="e.g. vacation, work, groceries"
+              placeholder="vacation, work, groceries"
               value={form.tags}
               onChange={(e) => setForm((prev) => ({ ...prev, tags: e.target.value }))}
-              className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-              style={{
-                backgroundColor: '#1a1a2e',
-                border: '1px solid #2a2a40',
-                color: '#e8e8f0',
-              }}
-              onFocus={(e) => {
-                (e.target as HTMLElement).style.borderColor = '#7c3aed';
-              }}
-              onBlur={(e) => {
-                (e.target as HTMLElement).style.borderColor = '#2a2a40';
-              }}
+              style={inputStyle}
+              onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
+              onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div
-          className="flex gap-3 px-6 py-4"
-          style={{ borderTop: '1px solid #2a2a40' }}
-        >
+        <div className="flex gap-3 px-5 py-4" style={{ borderTop: '1px solid #2a2a40' }}>
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors"
-            style={{
-              backgroundColor: '#1a1a2e',
-              color: '#8888a0',
-              border: '1px solid #2a2a40',
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor = '#22223a';
-              (e.currentTarget as HTMLElement).style.color = '#e8e8f0';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor = '#1a1a2e';
-              (e.currentTarget as HTMLElement).style.color = '#8888a0';
-            }}
+            className="flex-1 py-3 rounded-xl text-sm font-medium"
+            style={{ backgroundColor: '#1a1a2e', color: '#8888a0', border: '1px solid #2a2a40' }}
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-            style={{ backgroundColor: '#7c3aed', color: '#ffffff' }}
-            onMouseEnter={(e) => {
-              if (!isSaving) (e.currentTarget as HTMLElement).style.backgroundColor = '#6d28d9';
-            }}
-            onMouseLeave={(e) => {
-              if (!isSaving) (e.currentTarget as HTMLElement).style.backgroundColor = '#7c3aed';
-            }}
+            className="flex-1 py-3 rounded-xl text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+            style={{ background: 'linear-gradient(135deg, #7c3aed, #3b82f6)', color: '#fff' }}
           >
             <Plus className="w-4 h-4" />
-            {isSaving ? 'Saving...' : isEditing ? 'Update' : 'Add Transaction'}
+            {isSaving ? 'Saving…' : isEditing ? 'Update' : 'Add Transaction'}
           </button>
         </div>
       </div>

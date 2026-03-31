@@ -24,10 +24,12 @@ const navItems = [
   { label: 'Settings', href: '/settings', icon: Settings },
 ];
 
-// Bottom nav shows only the most important 5 items on mobile
+// All nav items on mobile bottom bar (scrollable)
 const mobileNavItems = [
   { label: 'Home', href: '/', icon: LayoutDashboard },
   { label: 'Transactions', href: '/transactions', icon: ArrowLeftRight },
+  { label: 'Accounts', href: '/accounts', icon: Building2 },
+  { label: 'Categories', href: '/categories', icon: Tag },
   { label: 'Budgets', href: '/budgets', icon: PieChart },
   { label: 'Goals', href: '/goals', icon: Target },
   { label: 'Settings', href: '/settings', icon: Settings },
@@ -110,30 +112,32 @@ export function Sidebar() {
         </div>
       </header>
 
-      {/* ── Mobile Bottom Nav ────────────────────────────────── */}
+      {/* ── Mobile Bottom Nav (horizontally scrollable) ──────── */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around px-2"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40"
         style={{
           backgroundColor: '#12121a',
           borderTop: '1px solid #2a2a40',
-          height: '60px',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        {mobileNavItems.map(({ label, href, icon: Icon }) => {
-          const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1 rounded-xl transition-colors"
-              style={{ color: isActive ? '#7c3aed' : '#555570' }}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium">{label}</span>
-            </Link>
-          );
-        })}
+        <div className="flex items-center overflow-x-auto scrollbar-none px-1 h-[58px]"
+          style={{ scrollbarWidth: 'none' }}>
+          {mobileNavItems.map(({ label, href, icon: Icon }) => {
+            const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="flex flex-col items-center justify-center gap-0.5 shrink-0 px-3 py-1 rounded-xl transition-colors min-w-[60px]"
+                style={{ color: isActive ? '#7c3aed' : '#555570' }}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-[9px] font-medium whitespace-nowrap">{label}</span>
+              </Link>
+            );
+          })}
+        </div>
       </nav>
     </>
   );

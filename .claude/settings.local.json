@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npx tsc:*)",
       "Bash(/opt/homebrew/bin/node /opt/homebrew/lib/node_modules/npm/bin/npx-cli.js tsc --noEmit --project /Users/amineabouzaid/financeflow/tsconfig.json)",
-      "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")"
+      "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
