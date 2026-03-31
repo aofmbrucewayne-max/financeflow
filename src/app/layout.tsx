@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -14,6 +14,20 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'FinanceFlow — Personal Finance',
   description: 'Track your income, expenses, budgets, and financial goals.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'FinanceFlow',
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#0a0a0f',
 };
 
 export default function RootLayout({
@@ -33,11 +47,14 @@ export default function RootLayout({
       >
         <AppInitializer />
         <Sidebar />
-        <main className="ml-60 min-h-screen">
-          <div className="max-w-[1400px] mx-auto p-6">
+
+        {/* Desktop: offset sidebar. Mobile: offset top bar + bottom nav */}
+        <main className="md:ml-60 pt-14 md:pt-0 pb-20 md:pb-0 min-h-screen">
+          <div className="max-w-[1400px] mx-auto p-4 md:p-6">
             {children}
           </div>
         </main>
+
         <Toaster
           position="bottom-right"
           toastOptions={{
