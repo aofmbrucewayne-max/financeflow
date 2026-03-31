@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { db } from '@/lib/db';
 import { TransactionModal } from '@/components/transactions/TransactionModal';
@@ -232,22 +232,6 @@ export default function TransactionsPage() {
         </div>
       )}
 
-      {/* FAB */}
-      <button
-        onClick={() => { setEditingId(null); setModalOpen(true); }}
-        className="fixed bottom-8 right-8 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all z-30"
-        style={{ backgroundColor: '#7c3aed' }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLElement).style.backgroundColor = '#6d28d9';
-          (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)';
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLElement).style.backgroundColor = '#7c3aed';
-          (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
-        }}
-      >
-        <Plus className="w-6 h-6 text-white" />
-      </button>
 
       <TransactionModal
         isOpen={modalOpen}
