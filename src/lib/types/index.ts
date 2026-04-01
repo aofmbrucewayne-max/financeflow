@@ -32,6 +32,7 @@ export interface Transaction {
   exchangeRate: number;
   accountId: string;
   toAccountId?: string;
+  fee?: number;
   categoryId: string;
   subcategoryId?: string;
   tags: string[];

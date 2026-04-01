@@ -22,6 +22,7 @@ type TransactionType = 'income' | 'expense' | 'transfer';
 const defaultForm = {
   type: 'expense' as TransactionType,
   amount: '',
+  fee: '',
   currency: 'USD',
   accountId: '',
   toAccountId: '',
@@ -60,6 +61,7 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
         setForm({
           type: tx.type as TransactionType,
           amount: String(tx.amount),
+          fee: tx.fee ? String(tx.fee) : '',
           currency: tx.currency,
           accountId: tx.accountId,
           toAccountId: tx.toAccountId ?? '',
@@ -103,6 +105,7 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
     try {
       const now = new Date().toISOString();
       const tags = form.tags.split(',').map((t) => t.trim()).filter(Boolean);
+      const feeAmount = form.type === 'transfer' && form.fee ? Number(form.fee) : 0;
       const txData: Transaction = {
         id: editingId ?? uuidv4(),
         type: form.type,
@@ -112,6 +115,7 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
         exchangeRate: 1,
         accountId: form.accountId,
         toAccountId: form.type === 'transfer' ? form.toAccountId : undefined,
+        fee: feeAmount > 0 ? feeAmount : undefined,
         categoryId: form.categoryId || 'uncategorized',
         subcategoryId: form.subcategoryId || undefined,
         tags,
@@ -125,11 +129,50 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
         const existing = await db.transactions.get(editingId!);
         txData.createdAt = existing?.createdAt ?? now;
         await db.transactions.put(txData);
+        // Remove old fee transaction if any, then recreate
+        await db.transactions.where('note').equals(`Fee: ${txData.note || 'Transfer'} [auto]`).and(t => t.date === txData.date && t.type === 'expense').delete();
         toast.success('Transaction updated');
       } else {
         await db.transactions.add(txData);
         toast.success('Transaction added');
       }
+
+      // Auto-create fee expense if transfer has a fee
+      if (feeAmount > 0) {
+        const feeCat = await db.categories.filter(c => c.name === 'Fees & Commissions' && !c.isArchived).first();
+        let feeCatId = feeCat?.id;
+        if (!feeCatId) {
+          feeCatId = uuidv4();
+          await db.categories.add({
+            id: feeCatId,
+            name: 'Fees & Commissions',
+            type: 'expense',
+            icon: '💸',
+            color: '#f43f5e',
+            parentId: null,
+            isCustom: false,
+            sortOrder: 99,
+            isArchived: false,
+          });
+        }
+        await db.transactions.add({
+          id: uuidv4(),
+          type: 'expense',
+          amount: feeAmount,
+          currency: form.currency,
+          amountInBase: feeAmount,
+          exchangeRate: 1,
+          accountId: form.accountId,
+          categoryId: feeCatId,
+          tags: ['fee'],
+          note: `Fee: ${form.note || 'Transfer'} [auto]`,
+          date: form.date,
+          isRecurring: false,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+
       onClose();
     } catch (err) {
       console.error(err);
@@ -270,6 +313,44 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
                   <option key={a.id} value={a.id}>{a.name} ({a.currency})</option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {/* Fee — transfer only */}
+          {form.type === 'transfer' && (
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
+                Fee / Commission <span style={{ color: '#555570' }}>(optional)</span>
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={form.fee}
+                  onChange={(e) => setForm((prev) => ({ ...prev, fee: e.target.value }))}
+                  style={{
+                    ...inputStyle,
+                    flex: 1,
+                    color: form.fee && Number(form.fee) > 0 ? '#f43f5e' : '#e8e8f0',
+                  }}
+                  onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
+                  onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
+                />
+                <div
+                  className="flex items-center gap-1.5 px-3 rounded-xl text-xs shrink-0"
+                  style={{ backgroundColor: '#f43f5e15', color: '#f43f5e', border: '1px solid #f43f5e30' }}
+                >
+                  💸 Fees
+                </div>
+              </div>
+              {form.fee && Number(form.fee) > 0 && (
+                <p className="text-xs mt-1.5" style={{ color: '#555570' }}>
+                  Will be tracked as expense under &quot;Fees &amp; Commissions&quot;
+                </p>
+              )}
             </div>
           )}
 

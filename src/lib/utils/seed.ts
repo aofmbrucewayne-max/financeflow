@@ -113,6 +113,16 @@ const expenseCategories: Omit<Category, 'id'>[] = [
     sortOrder: 11,
     isArchived: false,
   },
+  {
+    name: 'Fees & Commissions',
+    type: 'expense',
+    icon: '💸',
+    color: '#f43f5e',
+    parentId: null,
+    isCustom: false,
+    sortOrder: 12,
+    isArchived: false,
+  },
 ];
 
 const incomeCategories: Omit<Category, 'id'>[] = [

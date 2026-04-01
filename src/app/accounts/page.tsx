@@ -29,15 +29,18 @@ export default function AccountsPage() {
   const transactions = useLiveQuery(() => db.transactions.toArray());
 
   const getBalance = (accountId: string, initialBalance: number) => {
-    const txTotal =
-      transactions
-        ?.filter((tx) => tx.accountId === accountId)
-        .reduce((s, tx) => {
-          if (tx.type === 'income') return s + tx.amount;
-          if (tx.type === 'expense') return s - tx.amount;
-          return s;
-        }, 0) ?? 0;
-    return initialBalance + txTotal;
+    let total = 0;
+    transactions?.forEach((tx) => {
+      if (tx.accountId === accountId) {
+        if (tx.type === 'income') total += tx.amount;
+        else if (tx.type === 'expense') total -= tx.amount;
+        else if (tx.type === 'transfer') total -= tx.amount;
+      }
+      if (tx.type === 'transfer' && tx.toAccountId === accountId) {
+        total += tx.amount;
+      }
+    });
+    return initialBalance + total;
   };
 
   const handleArchive = async (id: string) => {

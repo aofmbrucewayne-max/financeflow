@@ -127,13 +127,17 @@ export default function DashboardPage() {
   const accountMap = new Map(accounts?.map((a) => [a.id, a]) ?? []);
 
   const totalBalance = accounts?.reduce((sum, acc) => {
-    const txTotal = allTransactions
-      ?.filter((tx) => tx.accountId === acc.id)
-      .reduce((s, tx) => {
-        if (tx.type === 'income') return s + tx.amount;
-        if (tx.type === 'expense') return s - tx.amount;
-        return s;
-      }, 0) ?? 0;
+    let txTotal = 0;
+    allTransactions?.forEach((tx) => {
+      if (tx.accountId === acc.id) {
+        if (tx.type === 'income') txTotal += tx.amount;
+        else if (tx.type === 'expense') txTotal -= tx.amount;
+        else if (tx.type === 'transfer') txTotal -= tx.amount;
+      }
+      if (tx.type === 'transfer' && tx.toAccountId === acc.id) {
+        txTotal += tx.amount;
+      }
+    });
     return sum + acc.initialBalance + txTotal;
   }, 0) ?? 0;
 
