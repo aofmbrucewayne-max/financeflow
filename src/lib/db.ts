@@ -43,6 +43,7 @@ export class FinanceDB extends Dexie {
     this.cloud.configure({
       databaseUrl: 'https://zpqvn0kac.dexie.cloud',
       requireAuth: false,
+      customLoginGui: true,
     });
   }
 }

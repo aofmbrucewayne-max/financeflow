@@ -22,10 +22,11 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
   const [error, setError] = useState('');
   const resolveInteraction = useRef<((params: Record<string, string>) => void) | null>(null);
 
-  // Listen for Dexie Cloud's userInteraction to handle OTP step
+  // Listen for Dexie Cloud's userInteraction to handle login steps
   useEffect(() => {
     if (!isOpen) return;
     const sub = db.cloud.userInteraction.subscribe((ia) => {
+      console.log('[CloudLogin] userInteraction:', ia?.type, ia);
       if (!ia) return;
       if (ia.type === 'otp') {
         setStep('otp');
@@ -34,11 +35,13 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
         resolveInteraction.current = ia.onSubmit as (params: Record<string, string>) => void;
       } else if (ia.type === 'email') {
         // Dexie is asking for email — auto-submit if we have it
+        console.log('[CloudLogin] email interaction, auto-submitting:', email);
         if (email) {
           (ia.onSubmit as (params: Record<string, string>) => void)({ email: email.trim() });
+        } else {
+          setLoading(false);
         }
       } else if (ia.type === 'message-alert') {
-        // Error or info from Dexie Cloud
         const alerts = (ia as { alerts?: { message: string }[] }).alerts;
         if (alerts?.length) {
           setError(alerts.map((a: { message: string }) => a.message).join('. '));
@@ -71,22 +74,30 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
     onClose();
   };
 
-  const handleSendEmail = async () => {
+  const handleSendEmail = () => {
     if (!email.trim() || !email.includes('@')) {
       setError('Please enter a valid email address');
       return;
     }
     setLoading(true);
     setError('');
-    try {
-      // This triggers the Dexie Cloud login flow.
-      // It will emit on userInteraction observable for OTP step.
-      db.cloud.login({ email: email.trim(), grant_type: 'otp' });
-    } catch (err) {
-      console.error('Login error:', err);
-      setError(String(err instanceof Error ? err.message : 'Failed to start login'));
-      setLoading(false);
-    }
+
+    console.log('[CloudLogin] Starting login for:', email.trim());
+
+    // This triggers the Dexie Cloud login flow.
+    // With customLoginGui:true, it emits on userInteraction for each step.
+    // The promise resolves when login is complete.
+    db.cloud.login({ email: email.trim(), grant_type: 'otp' })
+      .then(() => {
+        console.log('[CloudLogin] login() resolved');
+        toast.success('Logged in successfully!');
+        resetAndClose();
+      })
+      .catch((err: unknown) => {
+        console.error('[CloudLogin] login() rejected:', err);
+        setError(String(err instanceof Error ? err.message : 'Login failed'));
+        setLoading(false);
+      });
   };
 
   const handleVerifyOtp = () => {
@@ -96,9 +107,10 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
     }
     setLoading(true);
     setError('');
-    if (resolveInteraction.current) {
-      // Submit OTP through Dexie's interaction handler
-      resolveInteraction.current({ otp: otp.trim() });
+
+    const submitFn = resolveInteraction.current;
+    if (submitFn) {
+      submitFn({ otp: otp.trim() });
     } else {
       // Fallback: try direct login with OTP
       db.cloud.login({
@@ -107,6 +119,16 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
         otp: otp.trim(),
       });
     }
+
+    // Safety timeout — if nothing happens after 15s, stop loading
+    setTimeout(() => {
+      setLoading((prev) => {
+        if (prev) {
+          setError('Verification timed out. Please try again.');
+        }
+        return false;
+      });
+    }, 15000);
   };
 
   if (!isOpen) return null;
