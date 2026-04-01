@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { FlaskConical, Trash2, Download, Upload, Palette, Cloud, LogIn, LogOut, RefreshCw } from 'lucide-react';
+import { FlaskConical, Trash2, Download, Upload, Palette, Cloud, LogIn, LogOut } from 'lucide-react';
 import { db } from '@/lib/db';
 import { seedDemoData } from '@/lib/utils/demoSeed';
 import { useThemeStore } from '@/lib/stores/themeStore';
@@ -17,7 +17,7 @@ export default function SettingsPage() {
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [syncing, setSyncing] = useState(false);
+
 
   const checkLoginStatus = useCallback(() => {
     const sub = db.cloud.currentUser.subscribe((user) => {
@@ -32,22 +32,18 @@ export default function SettingsPage() {
     return () => sub.unsubscribe();
   }, [checkLoginStatus]);
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     try {
-      setSyncing(true);
-      await db.cloud.login();
-      toast.success('Logged in! Your data will sync across devices.');
+      db.cloud.login();
     } catch (err) {
       console.error(err);
       toast.error('Login failed. Please try again.');
-    } finally {
-      setSyncing(false);
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     try {
-      await db.cloud.logout();
+      db.cloud.logout();
       toast.success('Logged out');
     } catch (err) {
       console.error(err);
@@ -222,14 +218,13 @@ export default function SettingsPage() {
               </div>
               <button
                 onClick={handleLogin}
-                disabled={syncing}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors"
                 style={{ backgroundColor: c.accent, color: '#fff' }}
-                onMouseEnter={(e) => { if (!syncing) (e.currentTarget as HTMLElement).style.backgroundColor = c.accentHover; }}
-                onMouseLeave={(e) => { if (!syncing) (e.currentTarget as HTMLElement).style.backgroundColor = c.accent; }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.accentHover; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.accent; }}
               >
-                {syncing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
-                {syncing ? 'Connecting...' : 'Login with Email'}
+                <LogIn className="w-4 h-4" />
+                Login with Email
               </button>
             </div>
           )}
