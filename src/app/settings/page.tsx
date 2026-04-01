@@ -17,13 +17,21 @@ export default function SettingsPage() {
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [syncStatus, setSyncStatus] = useState('unknown');
 
   useEffect(() => {
-    const sub = db.cloud.currentUser.subscribe((user) => {
-      setIsLoggedIn(user?.isLoggedIn ?? false);
+    const userSub = db.cloud.currentUser.subscribe((user) => {
+      const loggedIn = user?.isLoggedIn ?? false;
+      setIsLoggedIn(loggedIn);
       setUserEmail(user?.email ?? null);
+      if (loggedIn && user?.email) {
+        toast.success(`Logged in as ${user.email}`);
+      }
     });
-    return () => sub.unsubscribe();
+    const syncSub = db.cloud.syncState.subscribe((state) => {
+      setSyncStatus(state?.phase ?? state?.status ?? 'unknown');
+    });
+    return () => { userSub.unsubscribe(); syncSub.unsubscribe(); };
   }, []);
 
   const handleLogin = () => {
@@ -182,6 +190,9 @@ export default function SettingsPage() {
           </div>
           <p className="text-xs mt-0.5" style={{ color: c.textTertiary }}>
             Sync your data across devices. Login to enable.
+          </p>
+          <p className="text-xs mt-1 font-mono" style={{ color: c.textTertiary }}>
+            Status: {syncStatus} · {isLoggedIn ? 'logged in' : 'not logged in'}
           </p>
         </div>
         <div className="px-6 py-5">
