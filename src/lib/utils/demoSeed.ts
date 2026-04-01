@@ -206,13 +206,10 @@ export async function seedDemoData(): Promise<void> {
 
     // generate ~18-25 spending entries per month
     const numEntries = Math.floor(rnd(18, 25));
-    const usedDays = new Set<string>();
     for (let i = 0; i < numEntries; i++) {
       const day = Math.floor(rnd(1, lastDay));
       const item = pick(expensePool);
       const ds = dateStr(year, m, day);
-      // allow multiple per day but track for realism
-      usedDays.add(ds);
       transactions.push({
         id: uuidv4(), type: 'expense',
         amount: rnd(item.min, item.max), currency: 'USD',

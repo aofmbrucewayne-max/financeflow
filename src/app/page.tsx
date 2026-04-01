@@ -11,6 +11,7 @@ import { db } from '@/lib/db';
 import { TransactionModal } from '@/components/transactions/TransactionModal';
 import { TransactionRow } from '@/components/transactions/TransactionRow';
 import { formatCurrency } from '@/lib/utils/currency';
+import { getAccountBalance } from '@/lib/utils/balance';
 import { getCurrentMonthKey } from '@/lib/utils/dates';
 import { useThemeStore } from '@/lib/stores/themeStore';
 
@@ -129,20 +130,9 @@ export default function DashboardPage() {
   const categoryMap = new Map(categories?.map((cat) => [cat.id, cat]) ?? []);
   const accountMap = new Map(accounts?.map((a) => [a.id, a]) ?? []);
 
-  const totalBalance = accounts?.reduce((sum, acc) => {
-    let txTotal = 0;
-    allTransactions?.forEach((tx) => {
-      if (tx.accountId === acc.id) {
-        if (tx.type === 'income') txTotal += tx.amount;
-        else if (tx.type === 'expense') txTotal -= tx.amount;
-        else if (tx.type === 'transfer') txTotal -= tx.amount;
-      }
-      if (tx.type === 'transfer' && tx.toAccountId === acc.id) {
-        txTotal += tx.amount;
-      }
-    });
-    return sum + acc.initialBalance + txTotal;
-  }, 0) ?? 0;
+  const txList = allTransactions ?? [];
+  const totalBalance = accounts?.reduce((sum, acc) =>
+    sum + getAccountBalance(acc.id, acc.initialBalance, txList), 0) ?? 0;
 
   const incomeThisMonth = monthTransactions?.filter((tx) => tx.type === 'income').reduce((s, tx) => s + tx.amountInBase, 0) ?? 0;
   const expensesThisMonth = monthTransactions?.filter((tx) => tx.type === 'expense').reduce((s, tx) => s + tx.amountInBase, 0) ?? 0;
@@ -334,18 +324,7 @@ export default function DashboardPage() {
               </div>
             ) : (
               accounts?.map((acc) => {
-                let txTotal = 0;
-                allTransactions?.forEach((tx) => {
-                  if (tx.accountId === acc.id) {
-                    if (tx.type === 'income') txTotal += tx.amount;
-                    else if (tx.type === 'expense') txTotal -= tx.amount;
-                    else if (tx.type === 'transfer') txTotal -= tx.amount;
-                  }
-                  if (tx.type === 'transfer' && tx.toAccountId === acc.id) {
-                    txTotal += tx.amount;
-                  }
-                });
-                const balance = acc.initialBalance + txTotal;
+                const balance = getAccountBalance(acc.id, acc.initialBalance, txList);
                 return (
                   <div key={acc.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: c.bgTertiary }}>
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0" style={{ backgroundColor: acc.color + '20' }}>

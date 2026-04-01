@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { db } from '@/lib/db';
 import { AccountModal } from '@/components/accounts/AccountModal';
 import { formatCurrency } from '@/lib/utils/currency';
+import { getAccountBalance } from '@/lib/utils/balance';
 import { useThemeStore } from '@/lib/stores/themeStore';
 import type { Account } from '@/lib/types';
 
@@ -30,20 +31,9 @@ export default function AccountsPage() {
 
   const transactions = useLiveQuery(() => db.transactions.toArray());
 
-  const getBalance = (accountId: string, initialBalance: number) => {
-    let total = 0;
-    transactions?.forEach((tx) => {
-      if (tx.accountId === accountId) {
-        if (tx.type === 'income') total += tx.amount;
-        else if (tx.type === 'expense') total -= tx.amount;
-        else if (tx.type === 'transfer') total -= tx.amount;
-      }
-      if (tx.type === 'transfer' && tx.toAccountId === accountId) {
-        total += tx.amount;
-      }
-    });
-    return initialBalance + total;
-  };
+  const txList = transactions ?? [];
+  const getBalance = (accountId: string, initialBalance: number) =>
+    getAccountBalance(accountId, initialBalance, txList);
 
   const handleArchive = async (id: string) => {
     if (confirm('Archive this account? It will be hidden but not deleted.')) {

@@ -18,7 +18,8 @@ export function useBudgets(month?: string): BudgetWithSpending[] | undefined {
     if (budgets.length === 0) return [];
 
     const monthStart = `${targetMonth}-01`;
-    const monthEnd = `${targetMonth}-31`;
+    const [y, mo] = targetMonth.split('-').map(Number);
+    const monthEnd = `${targetMonth}-${String(new Date(y, mo, 0).getDate()).padStart(2, '0')}`;
 
     const transactions = await db.transactions
       .where('date')

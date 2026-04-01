@@ -36,7 +36,7 @@ export function useTransactions(filters: TransactionFilters = {}): Transaction[]
       }
       if (filters.search) {
         const q = filters.search.toLowerCase();
-        if (!tx.note.toLowerCase().includes(q) && !tx.tags.some((t) => t.toLowerCase().includes(q))) {
+        if (!(tx.note ?? '').toLowerCase().includes(q) && !(tx.tags ?? []).some((t) => t.toLowerCase().includes(q))) {
           return false;
         }
       }

@@ -100,7 +100,6 @@ export function AccountModal({ isOpen, onClose, editingId }: AccountModalProps) 
 
       onClose();
     } catch (err) {
-      console.error(err);
       toast.error('Failed to save account');
     } finally {
       setIsSaving(false);

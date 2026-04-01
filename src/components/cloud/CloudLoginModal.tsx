@@ -21,6 +21,7 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const resolveInteraction = useRef<((params: Record<string, string>) => void) | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Listen for Dexie Cloud's userInteraction to handle login steps
   useEffect(() => {
@@ -68,6 +69,7 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
     setError('');
     setLoading(false);
     resolveInteraction.current = null;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     onClose();
   };
 
@@ -114,7 +116,8 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
     }
 
     // Safety timeout — if nothing happens after 15s, stop loading
-    setTimeout(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
       setLoading((prev) => {
         if (prev) {
           setError('Verification timed out. Please try again.');

@@ -51,8 +51,7 @@ function BudgetModal({
       });
       toast.success('Budget created');
       onClose();
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Failed to save');
     } finally {
       setIsSaving(false);

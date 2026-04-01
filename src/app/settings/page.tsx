@@ -36,8 +36,7 @@ export default function SettingsPage() {
     try {
       await db.cloud.logout({ force: true });
       toast.success('Logged out');
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Logout failed');
     }
   };
@@ -48,8 +47,7 @@ export default function SettingsPage() {
     try {
       await seedDemoData();
       toast.success('Demo data loaded — 1 year of transactions, 4 accounts, goals & budgets!');
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Failed to load demo data');
     } finally {
       setLoadingDemo(false);
@@ -67,8 +65,7 @@ export default function SettingsPage() {
       await db.savingsGoals.clear();
       await db.tags.clear();
       toast.success('All data cleared');
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Failed to clear data');
     } finally {
       setLoadingClear(false);

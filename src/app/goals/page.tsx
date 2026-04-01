@@ -91,8 +91,7 @@ export default function GoalsPage() {
         toast.success('Goal created');
       }
       setModalOpen(false);
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Failed to save goal');
     } finally {
       setIsSaving(false);

@@ -8,6 +8,7 @@ import { db } from '@/lib/db';
 import { useThemeStore } from '@/lib/stores/themeStore';
 import { TransactionModal } from '@/components/transactions/TransactionModal';
 import { TransactionRow } from '@/components/transactions/TransactionRow';
+import { formatAmount } from '@/lib/utils/currency';
 
 type FilterType = 'all' | 'income' | 'expense' | 'transfer';
 
@@ -213,7 +214,7 @@ export default function TransactionsPage() {
                     className="text-xs font-semibold"
                     style={{ color: dayTotal >= 0 ? '#22c55e' : '#ef4444' }}
                   >
-                    {dayTotal >= 0 ? '+' : ''}{dayTotal.toFixed(2)}
+                    {dayTotal >= 0 ? '+' : '-'}{formatAmount(Math.abs(dayTotal))}
                   </span>
                 </div>
                 <div className="px-2 py-1">

@@ -177,7 +177,6 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
 
       onClose();
     } catch (err) {
-      console.error(err);
       toast.error('Failed to save transaction');
     } finally {
       setIsSaving(false);
