@@ -116,18 +116,18 @@ export function Sidebar() {
       <nav
         className="md:hidden fixed z-40"
         style={{
-          bottom: 'calc(12px + env(safe-area-inset-bottom))',
-          left: '12px',
-          right: '12px',
+          bottom: 'calc(18px + env(safe-area-inset-bottom))',
+          left: '20px',
+          right: '20px',
         }}
       >
         <div
-          className="flex items-center overflow-x-auto scrollbar-none px-2 h-[56px] gap-1"
+          className="flex items-center overflow-x-auto scrollbar-none px-3 h-[66px] gap-1"
           style={{
             backgroundColor: 'rgba(18, 18, 26, 0.92)',
             backdropFilter: 'blur(20px) saturate(180%)',
             WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-            borderRadius: '20px',
+            borderRadius: '24px',
             border: '1px solid rgba(124, 58, 237, 0.2)',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(255,255,255,0.05) inset',
             scrollbarWidth: 'none',
@@ -139,15 +139,15 @@ export function Sidebar() {
               <Link
                 key={href}
                 href={href}
-                className="flex flex-col items-center justify-center gap-0.5 shrink-0 px-3 py-1.5 rounded-2xl transition-all min-w-[54px]"
+                className="flex flex-col items-center justify-center gap-1 shrink-0 px-3.5 py-2 rounded-2xl transition-all min-w-[58px]"
                 style={
                   isActive
                     ? { color: '#ffffff', backgroundColor: '#7c3aed30' }
                     : { color: '#666680' }
                 }
               >
-                <Icon className="w-5 h-5" />
-                <span className="text-[9px] font-medium whitespace-nowrap">{label}</span>
+                <Icon className="w-6 h-6" />
+                <span className="text-[10px] font-medium whitespace-nowrap">{label}</span>
               </Link>
             );
           })}
