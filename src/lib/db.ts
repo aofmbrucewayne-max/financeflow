@@ -44,6 +44,7 @@ export class FinanceDB extends Dexie {
       databaseUrl: 'https://zpqvn0kac.dexie.cloud',
       requireAuth: false,
       customLoginGui: true,
+      unsyncedTables: ['settings', 'exchangeRates'],
     });
   }
 }

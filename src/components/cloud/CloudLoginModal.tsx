@@ -26,7 +26,6 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
   useEffect(() => {
     if (!isOpen) return;
     const sub = db.cloud.userInteraction.subscribe((ia) => {
-      console.log('[CloudLogin] userInteraction:', ia?.type, ia);
       if (!ia) return;
       if (ia.type === 'otp') {
         setStep('otp');
@@ -34,8 +33,6 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
         setError('');
         resolveInteraction.current = ia.onSubmit as (params: Record<string, string>) => void;
       } else if (ia.type === 'email') {
-        // Dexie is asking for email — auto-submit if we have it
-        console.log('[CloudLogin] email interaction, auto-submitting:', email);
         if (email) {
           (ia.onSubmit as (params: Record<string, string>) => void)({ email: email.trim() });
         } else {
@@ -82,19 +79,15 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
     setLoading(true);
     setError('');
 
-    console.log('[CloudLogin] Starting login for:', email.trim());
-
     // This triggers the Dexie Cloud login flow.
     // With customLoginGui:true, it emits on userInteraction for each step.
     // The promise resolves when login is complete.
     db.cloud.login({ email: email.trim(), grant_type: 'otp' })
       .then(() => {
-        console.log('[CloudLogin] login() resolved');
         toast.success('Logged in successfully!');
         resetAndClose();
       })
       .catch((err: unknown) => {
-        console.error('[CloudLogin] login() rejected:', err);
         setError(String(err instanceof Error ? err.message : 'Login failed'));
         setLoading(false);
       });
