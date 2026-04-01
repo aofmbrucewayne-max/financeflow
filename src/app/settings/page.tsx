@@ -29,7 +29,13 @@ export default function SettingsPage() {
   const handleLogin = () => {
     // With customLoginGui: true, this triggers db.cloud.userInteraction
     // which CloudLoginModal listens to and renders the email/OTP dialog
-    db.cloud.login();
+    try {
+      db.cloud.login();
+      toast.info('Opening login...');
+    } catch (err) {
+      console.error('Login error:', err);
+      toast.error('Login failed: ' + String(err));
+    }
   };
 
   const handleLogout = async () => {
