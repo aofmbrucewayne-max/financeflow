@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { FlaskConical, Trash2, Download, Upload, Palette, Cloud, LogIn, LogOut } from 'lucide-react';
 import { db } from '@/lib/db';
@@ -18,32 +18,23 @@ export default function SettingsPage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-
-  const checkLoginStatus = useCallback(() => {
+  useEffect(() => {
     const sub = db.cloud.currentUser.subscribe((user) => {
       setIsLoggedIn(user?.isLoggedIn ?? false);
       setUserEmail(user?.email ?? null);
     });
-    return sub;
+    return () => sub.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const sub = checkLoginStatus();
-    return () => sub.unsubscribe();
-  }, [checkLoginStatus]);
-
   const handleLogin = () => {
-    try {
-      db.cloud.login();
-    } catch (err) {
-      console.error(err);
-      toast.error('Login failed. Please try again.');
-    }
+    // With customLoginGui: true, this triggers db.cloud.userInteraction
+    // which CloudLoginModal listens to and renders the email/OTP dialog
+    db.cloud.login();
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
-      db.cloud.logout();
+      await db.cloud.logout({ force: true });
       toast.success('Logged out');
     } catch (err) {
       console.error(err);

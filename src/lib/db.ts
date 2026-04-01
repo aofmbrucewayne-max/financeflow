@@ -27,6 +27,7 @@ export class FinanceDB extends Dexie {
     super('FinanceFlow', {
       addons: [dexieCloud],
     });
+
     this.version(1).stores({
       accounts: 'id, type, currency, isArchived, createdAt',
       categories: 'id, type, parentId, isArchived, sortOrder',
@@ -41,7 +42,8 @@ export class FinanceDB extends Dexie {
 
     this.cloud.configure({
       databaseUrl: 'https://zpqvn0kac.dexie.cloud',
-      requireAuth: false, // App works without login, sync when logged in
+      requireAuth: false,
+      customLoginGui: true,
     });
   }
 }

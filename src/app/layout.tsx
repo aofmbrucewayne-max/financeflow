@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { AppInitializer } from '@/components/layout/AppInitializer';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
+import { CloudLoginModal } from '@/components/cloud/CloudLoginModal';
 
 const inter = Inter({
   variable: '--font-sans',
@@ -57,6 +58,7 @@ export default function RootLayout({
           </div>
         </main>
 
+        <CloudLoginModal />
         <Toaster
           position="bottom-right"
           toastOptions={{
