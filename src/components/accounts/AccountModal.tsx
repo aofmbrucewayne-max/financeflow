@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { db } from '@/lib/db';
 import type { Account } from '@/lib/types';
 import { SUPPORTED_CURRENCIES } from '@/lib/utils/currency';
+import { useThemeStore } from '@/lib/stores/themeStore';
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -41,6 +42,7 @@ const defaultForm = {
 };
 
 export function AccountModal({ isOpen, onClose, editingId }: AccountModalProps) {
+  const c = useThemeStore((s) => s.colors);
   const [form, setForm] = useState(defaultForm);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -117,22 +119,22 @@ export function AccountModal({ isOpen, onClose, editingId }: AccountModalProps) 
     >
       <div
         className="w-full max-w-md rounded-2xl shadow-2xl"
-        style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}
+        style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}
       >
         {/* Header */}
         <div
           className="flex items-center justify-between px-6 py-4"
-          style={{ borderBottom: '1px solid #2a2a40' }}
+          style={{ borderBottom: `1px solid ${c.borderDefault}` }}
         >
-          <h2 className="text-base font-semibold" style={{ color: '#e8e8f0' }}>
+          <h2 className="text-base font-semibold" style={{ color: c.textPrimary }}>
             {editingId ? 'Edit Account' : 'New Account'}
           </h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg"
-            style={{ color: '#8888a0' }}
+            style={{ color: c.textSecondary }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor = '#22223a';
+              (e.currentTarget as HTMLElement).style.backgroundColor = c.bgElevated;
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
@@ -146,7 +148,7 @@ export function AccountModal({ isOpen, onClose, editingId }: AccountModalProps) 
         <div className="px-6 py-5 space-y-4">
           {/* Name */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>
               Account Name
             </label>
             <input
@@ -156,18 +158,18 @@ export function AccountModal({ isOpen, onClose, editingId }: AccountModalProps) 
               onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
               className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
               style={{
-                backgroundColor: '#1a1a2e',
-                border: '1px solid #2a2a40',
-                color: '#e8e8f0',
+                backgroundColor: c.bgTertiary,
+                border: `1px solid ${c.borderDefault}`,
+                color: c.textPrimary,
               }}
-              onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
-              onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
+              onFocus={(e) => { (e.target as HTMLElement).style.borderColor = c.accent; }}
+              onBlur={(e) => { (e.target as HTMLElement).style.borderColor = c.borderDefault; }}
             />
           </div>
 
           {/* Type */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>
               Account Type
             </label>
             <select
@@ -175,9 +177,9 @@ export function AccountModal({ isOpen, onClose, editingId }: AccountModalProps) 
               onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value as Account['type'] }))}
               className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
               style={{
-                backgroundColor: '#1a1a2e',
-                border: '1px solid #2a2a40',
-                color: '#e8e8f0',
+                backgroundColor: c.bgTertiary,
+                border: `1px solid ${c.borderDefault}`,
+                color: c.textPrimary,
               }}
             >
               {ACCOUNT_TYPES.map((t) => (
@@ -191,7 +193,7 @@ export function AccountModal({ isOpen, onClose, editingId }: AccountModalProps) 
           {/* Currency & Initial Balance */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>
                 Currency
               </label>
               <select
@@ -199,20 +201,20 @@ export function AccountModal({ isOpen, onClose, editingId }: AccountModalProps) 
                 onChange={(e) => setForm((prev) => ({ ...prev, currency: e.target.value }))}
                 className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
                 style={{
-                  backgroundColor: '#1a1a2e',
-                  border: '1px solid #2a2a40',
-                  color: '#e8e8f0',
+                  backgroundColor: c.bgTertiary,
+                  border: `1px solid ${c.borderDefault}`,
+                  color: c.textPrimary,
                 }}
               >
-                {SUPPORTED_CURRENCIES.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.code} — {c.name}
+                {SUPPORTED_CURRENCIES.map((cur) => (
+                  <option key={cur.code} value={cur.code}>
+                    {cur.code} — {cur.name}
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>
                 Initial Balance
               </label>
               <input
@@ -223,19 +225,19 @@ export function AccountModal({ isOpen, onClose, editingId }: AccountModalProps) 
                 onChange={(e) => setForm((prev) => ({ ...prev, initialBalance: e.target.value }))}
                 className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
                 style={{
-                  backgroundColor: '#1a1a2e',
-                  border: '1px solid #2a2a40',
-                  color: '#e8e8f0',
+                  backgroundColor: c.bgTertiary,
+                  border: `1px solid ${c.borderDefault}`,
+                  color: c.textPrimary,
                 }}
-                onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
-                onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
+                onFocus={(e) => { (e.target as HTMLElement).style.borderColor = c.accent; }}
+                onBlur={(e) => { (e.target as HTMLElement).style.borderColor = c.borderDefault; }}
               />
             </div>
           </div>
 
           {/* Icon */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>
               Icon
             </label>
             <div className="flex gap-2 flex-wrap">
@@ -246,8 +248,8 @@ export function AccountModal({ isOpen, onClose, editingId }: AccountModalProps) 
                   className="w-10 h-10 rounded-xl text-xl flex items-center justify-center transition-all"
                   style={
                     form.icon === icon
-                      ? { backgroundColor: '#7c3aed30', border: '2px solid #7c3aed' }
-                      : { backgroundColor: '#1a1a2e', border: '2px solid transparent' }
+                      ? { backgroundColor: `${c.accent}30`, border: `2px solid ${c.accent}` }
+                      : { backgroundColor: c.bgTertiary, border: '2px solid transparent' }
                   }
                 >
                   {icon}
@@ -258,7 +260,7 @@ export function AccountModal({ isOpen, onClose, editingId }: AccountModalProps) 
 
           {/* Color */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>
               Color
             </label>
             <div className="flex gap-2 flex-wrap">
@@ -281,15 +283,15 @@ export function AccountModal({ isOpen, onClose, editingId }: AccountModalProps) 
         {/* Footer */}
         <div
           className="flex gap-3 px-6 py-4"
-          style={{ borderTop: '1px solid #2a2a40' }}
+          style={{ borderTop: `1px solid ${c.borderDefault}` }}
         >
           <button
             onClick={onClose}
             className="flex-1 py-2.5 rounded-xl text-sm font-medium"
             style={{
-              backgroundColor: '#1a1a2e',
-              color: '#8888a0',
-              border: '1px solid #2a2a40',
+              backgroundColor: c.bgTertiary,
+              color: c.textSecondary,
+              border: `1px solid ${c.borderDefault}`,
             }}
           >
             Cancel
@@ -298,12 +300,12 @@ export function AccountModal({ isOpen, onClose, editingId }: AccountModalProps) 
             onClick={handleSave}
             disabled={isSaving}
             className="flex-1 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50"
-            style={{ backgroundColor: '#7c3aed', color: '#ffffff' }}
+            style={{ backgroundColor: c.accent, color: '#ffffff' }}
             onMouseEnter={(e) => {
-              if (!isSaving) (e.currentTarget as HTMLElement).style.backgroundColor = '#6d28d9';
+              if (!isSaving) (e.currentTarget as HTMLElement).style.backgroundColor = c.accentHover;
             }}
             onMouseLeave={(e) => {
-              if (!isSaving) (e.currentTarget as HTMLElement).style.backgroundColor = '#7c3aed';
+              if (!isSaving) (e.currentTarget as HTMLElement).style.backgroundColor = c.accent;
             }}
           >
             {isSaving ? 'Saving...' : editingId ? 'Update Account' : 'Create Account'}

@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 import { db } from '@/lib/db';
 import { formatCurrency, SUPPORTED_CURRENCIES } from '@/lib/utils/currency';
+import { useThemeStore } from '@/lib/stores/themeStore';
 import type { SavingsGoal } from '@/lib/types';
 
 const GOAL_ICONS = ['🎯', '🏖️', '🚗', '🏠', '✈️', '💻', '💍', '🎓', '🏋️', '💰', '🏦', '🛡️'];
@@ -26,6 +27,7 @@ const defaultForm = {
 };
 
 export default function GoalsPage() {
+  const c = useThemeStore((s) => s.colors);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(defaultForm);
@@ -126,17 +128,17 @@ export default function GoalsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: '#e8e8f0' }}>Savings Goals</h1>
-          <p className="text-sm mt-0.5" style={{ color: '#8888a0' }}>
+          <h1 className="text-2xl font-bold" style={{ color: c.textPrimary }}>Savings Goals</h1>
+          <p className="text-sm mt-0.5" style={{ color: c.textSecondary }}>
             {active.length} active goal{active.length !== 1 ? 's' : ''}
           </p>
         </div>
         <button
           onClick={openNew}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium"
-          style={{ backgroundColor: '#7c3aed', color: '#fff' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#6d28d9'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#7c3aed'; }}
+          style={{ backgroundColor: c.accent, color: '#fff' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.accentHover; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.accent; }}
         >
           <Plus className="w-4 h-4" />
           New Goal
@@ -147,17 +149,17 @@ export default function GoalsPage() {
       {active.length === 0 ? (
         <div
           className="flex flex-col items-center justify-center py-20 rounded-2xl"
-          style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}
+          style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}
         >
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-4" style={{ backgroundColor: '#1a1a2e' }}>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-4" style={{ backgroundColor: c.bgTertiary }}>
             🎯
           </div>
-          <p className="text-base font-medium" style={{ color: '#e8e8f0' }}>No goals yet</p>
-          <p className="text-sm mt-1 mb-4" style={{ color: '#555570' }}>Set a savings goal and track your progress</p>
+          <p className="text-base font-medium" style={{ color: c.textPrimary }}>No goals yet</p>
+          <p className="text-sm mt-1 mb-4" style={{ color: c.textTertiary }}>Set a savings goal and track your progress</p>
           <button
             onClick={openNew}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium"
-            style={{ backgroundColor: '#7c3aed', color: '#fff' }}
+            style={{ backgroundColor: c.accent, color: '#fff' }}
           >
             <Plus className="w-4 h-4" /> Create First Goal
           </button>
@@ -183,7 +185,7 @@ export default function GoalsPage() {
           <button
             onClick={() => setShowCompleted((v) => !v)}
             className="flex items-center gap-2 text-sm mb-3"
-            style={{ color: '#8888a0' }}
+            style={{ color: c.textSecondary }}
           >
             <CheckCircle2 className="w-4 h-4 text-green-500" />
             {showCompleted ? 'Hide' : 'Show'} completed ({completed.length})
@@ -212,88 +214,88 @@ export default function GoalsPage() {
         >
           <div
             className="w-full max-w-md rounded-2xl shadow-2xl"
-            style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}
+            style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}
           >
-            <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid #2a2a40' }}>
-              <h2 className="text-base font-semibold" style={{ color: '#e8e8f0' }}>
+            <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: `1px solid ${c.borderDefault}` }}>
+              <h2 className="text-base font-semibold" style={{ color: c.textPrimary }}>
                 {editingId ? 'Edit Goal' : 'New Goal'}
               </h2>
-              <button onClick={() => setModalOpen(false)} style={{ color: '#8888a0' }}>✕</button>
+              <button onClick={() => setModalOpen(false)} style={{ color: c.textSecondary }}>✕</button>
             </div>
 
             <div className="px-6 py-5 space-y-4 max-h-[75vh] overflow-y-auto">
               {/* Name */}
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Goal Name</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Goal Name</label>
                 <input
                   type="text"
                   placeholder="e.g. Emergency Fund"
                   value={form.name}
                   onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
                   className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                  style={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40', color: '#e8e8f0' }}
-                  onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
-                  onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
+                  style={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}`, color: c.textPrimary }}
+                  onFocus={(e) => { (e.target as HTMLElement).style.borderColor = c.accent; }}
+                  onBlur={(e) => { (e.target as HTMLElement).style.borderColor = c.borderDefault; }}
                 />
               </div>
 
               {/* Amounts + Currency */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Target Amount</label>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Target Amount</label>
                   <input
                     type="number" min="0" step="0.01" placeholder="0.00"
                     value={form.targetAmount}
                     onChange={(e) => setForm((p) => ({ ...p, targetAmount: e.target.value }))}
                     className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                    style={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40', color: '#e8e8f0' }}
-                    onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
-                    onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
+                    style={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}`, color: c.textPrimary }}
+                    onFocus={(e) => { (e.target as HTMLElement).style.borderColor = c.accent; }}
+                    onBlur={(e) => { (e.target as HTMLElement).style.borderColor = c.borderDefault; }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Already Saved</label>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Already Saved</label>
                   <input
                     type="number" min="0" step="0.01" placeholder="0.00"
                     value={form.currentAmount}
                     onChange={(e) => setForm((p) => ({ ...p, currentAmount: e.target.value }))}
                     className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                    style={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40', color: '#e8e8f0' }}
-                    onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
-                    onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
+                    style={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}`, color: c.textPrimary }}
+                    onFocus={(e) => { (e.target as HTMLElement).style.borderColor = c.accent; }}
+                    onBlur={(e) => { (e.target as HTMLElement).style.borderColor = c.borderDefault; }}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Currency</label>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Currency</label>
                   <select
                     value={form.currency}
                     onChange={(e) => setForm((p) => ({ ...p, currency: e.target.value }))}
                     className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                    style={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40', color: '#e8e8f0' }}
+                    style={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}`, color: c.textPrimary }}
                   >
-                    {SUPPORTED_CURRENCIES.map((c) => (
-                      <option key={c.code} value={c.code}>{c.code}</option>
+                    {SUPPORTED_CURRENCIES.map((cur) => (
+                      <option key={cur.code} value={cur.code}>{cur.code}</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Deadline (optional)</label>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Deadline (optional)</label>
                   <input
                     type="date"
                     value={form.deadline}
                     onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))}
                     className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                    style={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40', color: '#e8e8f0', colorScheme: 'dark' }}
+                    style={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}`, color: c.textPrimary, colorScheme: 'dark' }}
                   />
                 </div>
               </div>
 
               {/* Icon */}
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Icon</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Icon</label>
                 <div className="flex flex-wrap gap-2">
                   {GOAL_ICONS.map((icon) => (
                     <button
@@ -301,8 +303,8 @@ export default function GoalsPage() {
                       onClick={() => setForm((p) => ({ ...p, icon }))}
                       className="w-10 h-10 rounded-xl text-xl flex items-center justify-center transition-all"
                       style={form.icon === icon
-                        ? { backgroundColor: '#7c3aed30', border: '2px solid #7c3aed' }
-                        : { backgroundColor: '#1a1a2e', border: '2px solid transparent' }}
+                        ? { backgroundColor: '#7c3aed30', border: `2px solid ${c.accent}` }
+                        : { backgroundColor: c.bgTertiary, border: '2px solid transparent' }}
                     >
                       {icon}
                     </button>
@@ -312,7 +314,7 @@ export default function GoalsPage() {
 
               {/* Color */}
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Color</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Color</label>
                 <div className="flex gap-2 flex-wrap">
                   {COLOR_SWATCHES.map((color) => (
                     <button
@@ -326,11 +328,11 @@ export default function GoalsPage() {
               </div>
             </div>
 
-            <div className="flex gap-3 px-6 py-4" style={{ borderTop: '1px solid #2a2a40' }}>
+            <div className="flex gap-3 px-6 py-4" style={{ borderTop: `1px solid ${c.borderDefault}` }}>
               <button
                 onClick={() => setModalOpen(false)}
                 className="flex-1 py-2.5 rounded-xl text-sm font-medium"
-                style={{ backgroundColor: '#1a1a2e', color: '#8888a0', border: '1px solid #2a2a40' }}
+                style={{ backgroundColor: c.bgTertiary, color: c.textSecondary, border: `1px solid ${c.borderDefault}` }}
               >
                 Cancel
               </button>
@@ -338,7 +340,7 @@ export default function GoalsPage() {
                 onClick={handleSave}
                 disabled={isSaving}
                 className="flex-1 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50"
-                style={{ backgroundColor: '#7c3aed', color: '#fff' }}
+                style={{ backgroundColor: c.accent, color: '#fff' }}
               >
                 {isSaving ? 'Saving...' : editingId ? 'Update' : 'Create Goal'}
               </button>
@@ -363,6 +365,7 @@ function GoalCard({
   onComplete?: () => void;
   onAddFunds?: (amount: number) => void;
 }) {
+  const c = useThemeStore((s) => s.colors);
   const [addInput, setAddInput] = useState('');
   const [showAdd, setShowAdd] = useState(false);
 
@@ -371,12 +374,12 @@ function GoalCard({
   const daysLeft = goal.deadline
     ? Math.ceil((new Date(goal.deadline).getTime() - Date.now()) / 86400000)
     : null;
-  const barColor = pct >= 100 ? '#22c55e' : pct >= 66 ? '#7c3aed' : pct >= 33 ? '#f59e0b' : '#ef4444';
+  const barColor = pct >= 100 ? '#22c55e' : pct >= 66 ? c.accent : pct >= 33 ? '#f59e0b' : '#ef4444';
 
   return (
     <div
       className="rounded-2xl p-5 flex flex-col gap-4"
-      style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}
+      style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
@@ -386,11 +389,11 @@ function GoalCard({
             {goal.icon}
           </div>
           <div>
-            <p className="text-sm font-semibold" style={{ color: '#e8e8f0' }}>{goal.name}</p>
-            <p className="text-xs" style={{ color: '#555570' }}>
+            <p className="text-sm font-semibold" style={{ color: c.textPrimary }}>{goal.name}</p>
+            <p className="text-xs" style={{ color: c.textTertiary }}>
               {goal.currency}
               {daysLeft !== null && (
-                <span style={{ color: daysLeft < 0 ? '#ef4444' : daysLeft < 30 ? '#f59e0b' : '#555570' }}>
+                <span style={{ color: daysLeft < 0 ? '#ef4444' : daysLeft < 30 ? '#f59e0b' : c.textTertiary }}>
                   {' '}· {daysLeft > 0 ? `${daysLeft} days left` : daysLeft === 0 ? 'Due today' : 'Overdue'}
                 </span>
               )}
@@ -399,9 +402,9 @@ function GoalCard({
         </div>
         <div className="flex gap-1 shrink-0">
           <button onClick={onEdit} className="p-2 md:p-1.5 rounded-lg transition-colors"
-            style={{ color: '#c0c0d8', backgroundColor: '#22223a' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#2a2a40'; (e.currentTarget as HTMLElement).style.color = '#ffffff'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#22223a'; (e.currentTarget as HTMLElement).style.color = '#c0c0d8'; }}>
+            style={{ color: c.textPrimary, backgroundColor: c.bgElevated }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.borderDefault; (e.currentTarget as HTMLElement).style.color = '#ffffff'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.bgElevated; (e.currentTarget as HTMLElement).style.color = c.textPrimary; }}>
             <Pencil className="w-3.5 h-3.5" />
           </button>
           <button onClick={onDelete} className="p-2 md:p-1.5 rounded-lg transition-colors"
@@ -416,10 +419,10 @@ function GoalCard({
       {/* Progress bar */}
       <div>
         <div className="flex justify-between text-xs mb-1.5">
-          <span style={{ color: '#8888a0' }}>Progress</span>
+          <span style={{ color: c.textSecondary }}>Progress</span>
           <span className="font-semibold" style={{ color: barColor }}>{pct.toFixed(1)}%</span>
         </div>
-        <div className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: '#1a1a2e' }}>
+        <div className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: c.bgTertiary }}>
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{ width: `${pct}%`, backgroundColor: barColor }}
@@ -429,16 +432,16 @@ function GoalCard({
 
       {/* Amounts comparison */}
       <div className="grid grid-cols-3 gap-2 text-center">
-        <div className="rounded-xl p-2.5" style={{ backgroundColor: '#1a1a2e' }}>
-          <p className="text-xs mb-0.5" style={{ color: '#555570' }}>Saved</p>
+        <div className="rounded-xl p-2.5" style={{ backgroundColor: c.bgTertiary }}>
+          <p className="text-xs mb-0.5" style={{ color: c.textTertiary }}>Saved</p>
           <p className="text-sm font-bold" style={{ color: '#22c55e' }}>{formatCurrency(goal.currentAmount, goal.currency)}</p>
         </div>
-        <div className="rounded-xl p-2.5" style={{ backgroundColor: '#1a1a2e' }}>
-          <p className="text-xs mb-0.5" style={{ color: '#555570' }}>Target</p>
-          <p className="text-sm font-bold" style={{ color: '#e8e8f0' }}>{formatCurrency(goal.targetAmount, goal.currency)}</p>
+        <div className="rounded-xl p-2.5" style={{ backgroundColor: c.bgTertiary }}>
+          <p className="text-xs mb-0.5" style={{ color: c.textTertiary }}>Target</p>
+          <p className="text-sm font-bold" style={{ color: c.textPrimary }}>{formatCurrency(goal.targetAmount, goal.currency)}</p>
         </div>
-        <div className="rounded-xl p-2.5" style={{ backgroundColor: '#1a1a2e' }}>
-          <p className="text-xs mb-0.5" style={{ color: '#555570' }}>Needed</p>
+        <div className="rounded-xl p-2.5" style={{ backgroundColor: c.bgTertiary }}>
+          <p className="text-xs mb-0.5" style={{ color: c.textTertiary }}>Needed</p>
           <p className="text-sm font-bold" style={{ color: remaining > 0 ? '#f59e0b' : '#22c55e' }}>
             {remaining > 0 ? formatCurrency(remaining, goal.currency) : '✓ Done'}
           </p>
@@ -455,9 +458,9 @@ function GoalCard({
                 value={addInput}
                 onChange={(e) => setAddInput(e.target.value)}
                 className="flex-1 px-3 py-2 rounded-xl text-sm outline-none"
-                style={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40', color: '#e8e8f0' }}
-                onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
-                onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
+                style={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}`, color: c.textPrimary }}
+                onFocus={(e) => { (e.target as HTMLElement).style.borderColor = c.accent; }}
+                onBlur={(e) => { (e.target as HTMLElement).style.borderColor = c.borderDefault; }}
                 autoFocus
               />
               <button
@@ -473,7 +476,7 @@ function GoalCard({
               <button
                 onClick={() => { setShowAdd(false); setAddInput(''); }}
                 className="px-3 py-2 rounded-xl text-sm"
-                style={{ backgroundColor: '#1a1a2e', color: '#8888a0' }}
+                style={{ backgroundColor: c.bgTertiary, color: c.textSecondary }}
               >
                 ✕
               </button>
@@ -483,7 +486,7 @@ function GoalCard({
               <button
                 onClick={() => setShowAdd(true)}
                 className="flex-1 py-2 rounded-xl text-xs font-medium transition-colors"
-                style={{ backgroundColor: '#7c3aed20', color: '#7c3aed', border: '1px solid #7c3aed40' }}
+                style={{ backgroundColor: '#7c3aed20', color: c.accent, border: '1px solid #7c3aed40' }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#7c3aed30'; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#7c3aed20'; }}
               >

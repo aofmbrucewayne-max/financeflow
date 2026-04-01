@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { db } from '@/lib/db';
 import type { Category } from '@/lib/types';
 import { useCategoryTree } from '@/lib/hooks/useCategories';
+import { useThemeStore } from '@/lib/stores/themeStore';
 
 const ICONS = [
   '🍽️','🏠','🚗','🎮','❤️','🛍️','📚','✈️','📱','📄','🏦','💼',
@@ -20,18 +21,6 @@ const COLORS = [
   '#f97316','#14b8a6','#64748b','#a78bfa',
 ];
 
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  backgroundColor: '#1a1a2e',
-  border: '1px solid #2a2a40',
-  color: '#e8e8f0',
-  borderRadius: '12px',
-  padding: '10px 12px',
-  fontSize: '14px',
-  outline: 'none',
-  boxSizing: 'border-box',
-};
-
 // ── Modal ──────────────────────────────────────────────────────────────────
 function CategoryModal({
   isOpen, onClose, editingId, defaultType = 'expense', defaultParentId = null,
@@ -42,6 +31,7 @@ function CategoryModal({
   defaultType?: 'income' | 'expense';
   defaultParentId?: string | null;
 }) {
+  const c = useThemeStore((s) => s.colors);
   const [name, setName] = useState('');
   const [type, setType] = useState<'income' | 'expense'>(defaultType);
   const [icon, setIcon] = useState('💰');
@@ -49,8 +39,20 @@ function CategoryModal({
   const [parentId, setParentId] = useState<string | null>(defaultParentId);
   const [isSaving, setIsSaving] = useState(false);
 
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    backgroundColor: c.bgTertiary,
+    border: `1px solid ${c.borderDefault}`,
+    color: c.textPrimary,
+    borderRadius: '12px',
+    padding: '10px 12px',
+    fontSize: '14px',
+    outline: 'none',
+    boxSizing: 'border-box',
+  };
+
   const parentCategories = useLiveQuery(
-    () => db.categories.filter(c => !c.isArchived && c.parentId === null && c.type === type).toArray(),
+    () => db.categories.filter(cat => !cat.isArchived && cat.parentId === null && cat.type === type).toArray(),
     [type],
   );
 
@@ -109,23 +111,23 @@ function CategoryModal({
     >
       <div
         className="w-full sm:max-w-md sm:mx-4 sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden"
-        style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40', maxHeight: '90dvh' }}
+        style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}`, maxHeight: '90dvh' }}
       >
         {/* Drag handle */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
-          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: '#3a3a55' }} />
+          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: c.borderHover }} />
         </div>
 
-        <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: '1px solid #2a2a40' }}>
-          <h2 className="text-base font-semibold" style={{ color: '#e8e8f0' }}>
+        <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: `1px solid ${c.borderDefault}` }}>
+          <h2 className="text-base font-semibold" style={{ color: c.textPrimary }}>
             {editingId ? 'Edit Category' : 'New Category'}
           </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg" style={{ color: '#8888a0' }}>✕</button>
+          <button onClick={onClose} className="p-1.5 rounded-lg" style={{ color: c.textSecondary }}>✕</button>
         </div>
 
         <div className="px-5 py-4 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(90dvh - 120px)' }}>
           {/* Type toggle */}
-          <div className="flex rounded-xl p-1 gap-1" style={{ backgroundColor: '#0a0a0f' }}>
+          <div className="flex rounded-xl p-1 gap-1" style={{ backgroundColor: c.bgPrimary }}>
             {(['expense', 'income'] as const).map((t) => (
               <button
                 key={t}
@@ -133,7 +135,7 @@ function CategoryModal({
                 className="flex-1 py-2.5 rounded-lg text-sm font-medium capitalize transition-all"
                 style={type === t
                   ? { backgroundColor: t === 'income' ? '#22c55e20' : '#ef444420', color: t === 'income' ? '#22c55e' : '#ef4444', border: `1px solid ${t === 'income' ? '#22c55e' : '#ef4444'}44` }
-                  : { color: '#8888a0' }}
+                  : { color: c.textSecondary }}
               >
                 {t}
               </button>
@@ -142,36 +144,36 @@ function CategoryModal({
 
           {/* Name */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Name</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Name</label>
             <input
               type="text"
               placeholder="Category name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               style={inputStyle}
-              onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
-              onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
+              onFocus={(e) => { (e.target as HTMLElement).style.borderColor = c.accent; }}
+              onBlur={(e) => { (e.target as HTMLElement).style.borderColor = c.borderDefault; }}
             />
           </div>
 
           {/* Parent */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Parent Category (optional)</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Parent Category (optional)</label>
             <select
               value={parentId ?? ''}
               onChange={(e) => setParentId(e.target.value || null)}
               style={inputStyle}
             >
               <option value="">None (top-level)</option>
-              {parentCategories?.map((c) => (
-                <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+              {parentCategories?.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
               ))}
             </select>
           </div>
 
           {/* Icon */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Icon</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Icon</label>
             <div className="flex gap-2 flex-wrap">
               {ICONS.map((i) => (
                 <button
@@ -179,8 +181,8 @@ function CategoryModal({
                   onClick={() => setIcon(i)}
                   className="w-9 h-9 rounded-xl text-lg flex items-center justify-center transition-all"
                   style={icon === i
-                    ? { backgroundColor: '#7c3aed30', border: '2px solid #7c3aed' }
-                    : { backgroundColor: '#1a1a2e', border: '2px solid transparent' }}
+                    ? { backgroundColor: c.accent + '30', border: `2px solid ${c.accent}` }
+                    : { backgroundColor: c.bgTertiary, border: '2px solid transparent' }}
                 >
                   {i}
                 </button>
@@ -190,28 +192,28 @@ function CategoryModal({
 
           {/* Color */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Color</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Color</label>
             <div className="flex gap-2 flex-wrap">
-              {COLORS.map((c) => (
+              {COLORS.map((ch) => (
                 <button
-                  key={c}
-                  onClick={() => setColor(c)}
+                  key={ch}
+                  onClick={() => setColor(ch)}
                   className="w-8 h-8 rounded-lg transition-all"
-                  style={{ backgroundColor: c, outline: color === c ? `2px solid ${c}` : 'none', outlineOffset: '2px' }}
+                  style={{ backgroundColor: ch, outline: color === ch ? `2px solid ${ch}` : 'none', outlineOffset: '2px' }}
                 />
               ))}
             </div>
           </div>
         </div>
 
-        <div className="flex gap-3 px-5 py-4" style={{ borderTop: '1px solid #2a2a40' }}>
+        <div className="flex gap-3 px-5 py-4" style={{ borderTop: `1px solid ${c.borderDefault}` }}>
           <button onClick={onClose} className="flex-1 py-3 rounded-xl text-sm font-medium"
-            style={{ backgroundColor: '#1a1a2e', color: '#8888a0', border: '1px solid #2a2a40' }}>
+            style={{ backgroundColor: c.bgTertiary, color: c.textSecondary, border: `1px solid ${c.borderDefault}` }}>
             Cancel
           </button>
           <button onClick={handleSave} disabled={isSaving}
             className="flex-1 py-3 rounded-xl text-sm font-semibold disabled:opacity-50"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #3b82f6)', color: '#fff' }}>
+            style={{ background: `linear-gradient(135deg, ${c.accent}, #3b82f6)`, color: '#fff' }}>
             {isSaving ? 'Saving…' : editingId ? 'Update' : 'Create'}
           </button>
         </div>
@@ -230,11 +232,12 @@ function CategoryItem({
   onEdit: (id: string) => void;
   onArchive: (id: string) => void;
 }) {
+  const c = useThemeStore((s) => s.colors);
   const [open, setOpen] = useState(false);
   const hasChildren = cat.children.length > 0;
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}>
+    <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}>
       {/* Parent row */}
       <div className="flex items-center gap-3 px-4 py-3">
         {/* Icon */}
@@ -245,9 +248,9 @@ function CategoryItem({
 
         {/* Name + subcount */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate" style={{ color: '#e8e8f0' }}>{cat.name}</p>
+          <p className="text-sm font-semibold truncate" style={{ color: c.textPrimary }}>{cat.name}</p>
           {hasChildren && (
-            <p className="text-xs" style={{ color: '#555570' }}>
+            <p className="text-xs" style={{ color: c.textTertiary }}>
               {cat.children.length} subcategor{cat.children.length === 1 ? 'y' : 'ies'}
             </p>
           )}
@@ -258,9 +261,9 @@ function CategoryItem({
           <button
             onClick={() => onEdit(cat.id)}
             className="p-2 rounded-lg transition-colors"
-            style={{ color: '#c0c0d8', backgroundColor: '#22223a' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#2a2a40'; (e.currentTarget as HTMLElement).style.color = '#ffffff'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#22223a'; (e.currentTarget as HTMLElement).style.color = '#c0c0d8'; }}
+            style={{ color: c.textPrimary, backgroundColor: c.bgElevated }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.borderDefault; (e.currentTarget as HTMLElement).style.color = '#ffffff'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.bgElevated; (e.currentTarget as HTMLElement).style.color = c.textPrimary; }}
           >
             <Pencil className="w-3.5 h-3.5" />
           </button>
@@ -277,7 +280,7 @@ function CategoryItem({
             <button
               onClick={() => setOpen((v) => !v)}
               className="p-2 rounded-lg transition-colors ml-1"
-              style={{ color: open ? '#7c3aed' : '#8888a0', backgroundColor: open ? '#7c3aed15' : 'transparent' }}
+              style={{ color: open ? c.accent : c.textSecondary, backgroundColor: open ? c.accent + '15' : 'transparent' }}
             >
               {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
@@ -287,34 +290,34 @@ function CategoryItem({
 
       {/* Subcategories — collapsible */}
       {hasChildren && open && (
-        <div style={{ borderTop: '1px solid #2a2a40' }}>
+        <div style={{ borderTop: `1px solid ${c.borderDefault}` }}>
           {cat.children.map((child, idx) => (
             <div
               key={child.id}
               className="flex items-center gap-3 px-4 py-2.5"
               style={{
-                backgroundColor: '#0d0d15',
-                borderTop: idx > 0 ? '1px solid #1e1e30' : undefined,
+                backgroundColor: c.bgPrimary,
+                borderTop: idx > 0 ? `1px solid ${c.borderDefault}` : undefined,
               }}
             >
               {/* Indent line */}
               <div className="flex items-center gap-2 ml-3 shrink-0">
-                <div className="w-px h-4 rounded" style={{ backgroundColor: '#2a2a40' }} />
+                <div className="w-px h-4 rounded" style={{ backgroundColor: c.borderDefault }} />
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0"
                   style={{ backgroundColor: child.color + '20' }}>
                   {child.icon}
                 </div>
               </div>
 
-              <p className="flex-1 text-sm font-medium truncate" style={{ color: '#c0c0d8' }}>{child.name}</p>
+              <p className="flex-1 text-sm font-medium truncate" style={{ color: c.textPrimary }}>{child.name}</p>
 
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   onClick={() => onEdit(child.id)}
                   className="p-2 md:p-1.5 rounded-lg transition-colors"
-                  style={{ color: '#c0c0d8', backgroundColor: '#1a1a2e' }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#22223a'; (e.currentTarget as HTMLElement).style.color = '#ffffff'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#1a1a2e'; (e.currentTarget as HTMLElement).style.color = '#c0c0d8'; }}
+                  style={{ color: c.textPrimary, backgroundColor: c.bgTertiary }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.bgElevated; (e.currentTarget as HTMLElement).style.color = '#ffffff'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.bgTertiary; (e.currentTarget as HTMLElement).style.color = c.textPrimary; }}
                 >
                   <Pencil className="w-3 h-3" />
                 </button>
@@ -338,6 +341,7 @@ function CategoryItem({
 
 // ── Page ───────────────────────────────────────────────────────────────────
 export default function CategoriesPage() {
+  const c = useThemeStore((s) => s.colors);
   const [tab, setTab] = useState<'expense' | 'income'>('expense');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -369,15 +373,15 @@ export default function CategoriesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold" style={{ color: '#e8e8f0' }}>Categories</h1>
-          <p className="text-sm mt-0.5" style={{ color: '#8888a0' }}>
+          <h1 className="text-xl md:text-2xl font-bold" style={{ color: c.textPrimary }}>Categories</h1>
+          <p className="text-sm mt-0.5" style={{ color: c.textSecondary }}>
             {tree?.length ?? 0} {tab} categories
           </p>
         </div>
         <button
           onClick={() => openNew(null)}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
-          style={{ background: 'linear-gradient(135deg, #7c3aed, #3b82f6)', color: '#fff' }}
+          style={{ background: `linear-gradient(135deg, ${c.accent}, #3b82f6)`, color: '#fff' }}
         >
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">Add Category</span>
@@ -387,15 +391,15 @@ export default function CategoriesPage() {
       {/* Tabs */}
       <div className="flex gap-2">
         {(['expense', 'income'] as const).map((t) => {
-          const c = t === 'income' ? '#22c55e' : '#ef4444';
+          const ch = t === 'income' ? '#22c55e' : '#ef4444';
           return (
             <button
               key={t}
               onClick={() => setTab(t)}
               className="px-4 py-2 rounded-xl text-sm font-medium capitalize transition-all"
               style={tab === t
-                ? { backgroundColor: c + '20', color: c, border: `1px solid ${c}44` }
-                : { backgroundColor: '#12121a', color: '#8888a0', border: '1px solid #2a2a40' }}
+                ? { backgroundColor: ch + '20', color: ch, border: `1px solid ${ch}44` }
+                : { backgroundColor: c.bgSecondary, color: c.textSecondary, border: `1px solid ${c.borderDefault}` }}
             >
               {t}
             </button>
@@ -406,13 +410,13 @@ export default function CategoriesPage() {
       {/* List */}
       {tree === undefined ? (
         <div className="flex items-center justify-center h-32">
-          <div className="w-6 h-6 rounded-full border-2 animate-spin" style={{ borderColor: '#7c3aed', borderTopColor: 'transparent' }} />
+          <div className="w-6 h-6 rounded-full border-2 animate-spin" style={{ borderColor: c.accent, borderTopColor: 'transparent' }} />
         </div>
       ) : tree.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 rounded-2xl" style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}>
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-3" style={{ backgroundColor: '#1a1a2e' }}>🏷️</div>
-          <p className="text-sm font-medium" style={{ color: '#e8e8f0' }}>No {tab} categories</p>
-          <button onClick={() => openNew(null)} className="mt-4 px-4 py-2 rounded-xl text-sm font-medium" style={{ backgroundColor: '#7c3aed', color: '#fff' }}>
+        <div className="flex flex-col items-center justify-center py-20 rounded-2xl" style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}>
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-3" style={{ backgroundColor: c.bgTertiary }}>🏷️</div>
+          <p className="text-sm font-medium" style={{ color: c.textPrimary }}>No {tab} categories</p>
+          <button onClick={() => openNew(null)} className="mt-4 px-4 py-2 rounded-xl text-sm font-medium" style={{ backgroundColor: c.accent, color: '#fff' }}>
             Create one
           </button>
         </div>

@@ -12,23 +12,25 @@ import { TransactionModal } from '@/components/transactions/TransactionModal';
 import { TransactionRow } from '@/components/transactions/TransactionRow';
 import { formatCurrency } from '@/lib/utils/currency';
 import { getCurrentMonthKey } from '@/lib/utils/dates';
+import { useThemeStore } from '@/lib/stores/themeStore';
 
 function StatCard({
   label, value, icon: Icon, color, subtext,
 }: {
   label: string; value: string; icon: React.ElementType; color: string; subtext?: string;
 }) {
+  const c = useThemeStore((s) => s.colors);
   return (
-    <div className="rounded-2xl p-4 flex flex-col gap-2" style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}>
+    <div className="rounded-2xl p-4 flex flex-col gap-2" style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}>
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium" style={{ color: '#8888a0' }}>{label}</span>
+        <span className="text-xs font-medium" style={{ color: c.textSecondary }}>{label}</span>
         <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: color + '20' }}>
           <Icon className="w-3.5 h-3.5" style={{ color }} />
         </div>
       </div>
       <div>
-        <p className="text-xl font-bold leading-tight" style={{ color: '#e8e8f0' }}>{value}</p>
-        {subtext && <p className="text-xs mt-0.5" style={{ color: '#555570' }}>{subtext}</p>}
+        <p className="text-xl font-bold leading-tight" style={{ color: c.textPrimary }}>{value}</p>
+        {subtext && <p className="text-xs mt-0.5" style={{ color: c.textTertiary }}>{subtext}</p>}
       </div>
     </div>
   );
@@ -103,6 +105,7 @@ function getRangeDates(
 }
 
 export default function DashboardPage() {
+  const c = useThemeStore((s) => s.colors);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [chartRange, setChartRange] = useState<ChartRange>('this_month');
@@ -123,7 +126,7 @@ export default function DashboardPage() {
   const categories = useLiveQuery(() => db.categories.toArray());
   const savingsGoals = useLiveQuery(() => db.savingsGoals.filter((g) => !g.isCompleted).toArray());
 
-  const categoryMap = new Map(categories?.map((c) => [c.id, c]) ?? []);
+  const categoryMap = new Map(categories?.map((cat) => [cat.id, cat]) ?? []);
   const accountMap = new Map(accounts?.map((a) => [a.id, a]) ?? []);
 
   const totalBalance = accounts?.reduce((sum, acc) => {
@@ -182,7 +185,7 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: '#7c3aed', borderTopColor: 'transparent' }} />
+        <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: c.accent, borderTopColor: 'transparent' }} />
       </div>
     );
   }
@@ -193,13 +196,13 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold" style={{ color: '#e8e8f0' }}>Dashboard</h1>
-          <p className="text-xs mt-0.5" style={{ color: '#8888a0' }}>Your financial overview</p>
+          <h1 className="text-xl md:text-2xl font-bold" style={{ color: c.textPrimary }}>Dashboard</h1>
+          <p className="text-xs mt-0.5" style={{ color: c.textSecondary }}>Your financial overview</p>
         </div>
         <button
           onClick={() => { setEditingId(null); setModalOpen(true); }}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90 shrink-0"
-          style={{ background: 'linear-gradient(135deg, #7c3aed, #3b82f6)', color: '#fff' }}
+          style={{ background: c.gradient, color: '#fff' }}
         >
           <Plus className="w-4 h-4 shrink-0" />
           <span className="hidden sm:inline">Add Transaction</span>
@@ -208,7 +211,7 @@ export default function DashboardPage() {
 
       {/* Stat Cards — 2 col on mobile, 4 on desktop */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
-        <StatCard label="Total Balance" value={formatCurrency(totalBalance, 'USD')} icon={Wallet} color="#7c3aed"
+        <StatCard label="Total Balance" value={formatCurrency(totalBalance, 'USD')} icon={Wallet} color={c.accent}
           subtext={`${accounts?.length ?? 0} account${(accounts?.length ?? 0) !== 1 ? 's' : ''}`} />
         <StatCard label="Income This Month" value={formatCurrency(incomeThisMonth, 'USD')} icon={TrendingUp} color="#22c55e"
           subtext={`${monthTransactions?.filter((t) => t.type === 'income').length ?? 0} tx`} />
@@ -219,13 +222,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Daily Chart */}
-      <div className="rounded-2xl" style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}>
+      <div className="rounded-2xl" style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}>
         {/* Chart header */}
-        <div className="px-4 py-3 flex flex-col gap-3" style={{ borderBottom: '1px solid #2a2a40' }}>
+        <div className="px-4 py-3 flex flex-col gap-3" style={{ borderBottom: `1px solid ${c.borderDefault}` }}>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-sm font-semibold" style={{ color: '#e8e8f0' }}>Activity — {rangeDates.title}</h2>
-              <p className="text-xs mt-0.5" style={{ color: '#555570' }}>Income, expenses & cumulative net</p>
+              <h2 className="text-sm font-semibold" style={{ color: c.textPrimary }}>Activity — {rangeDates.title}</h2>
+              <p className="text-xs mt-0.5" style={{ color: c.textTertiary }}>Income, expenses & cumulative net</p>
             </div>
             {/* Period dropdown */}
             <div className="relative shrink-0">
@@ -233,13 +236,13 @@ export default function DashboardPage() {
                 value={chartRange}
                 onChange={(e) => setChartRange(e.target.value as ChartRange)}
                 className="appearance-none pl-3 pr-8 py-2 rounded-xl text-xs font-medium outline-none cursor-pointer"
-                style={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40', color: '#e8e8f0' }}
+                style={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}`, color: c.textPrimary }}
               >
                 {RANGE_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none" style={{ color: '#8888a0' }} />
+              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none" style={{ color: c.textSecondary }} />
             </div>
           </div>
 
@@ -251,15 +254,15 @@ export default function DashboardPage() {
                 value={customStart}
                 onChange={(e) => setCustomStart(e.target.value)}
                 className="flex-1 px-3 py-2 rounded-xl text-xs outline-none"
-                style={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40', color: '#e8e8f0', colorScheme: 'dark' }}
+                style={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}`, color: c.textPrimary, colorScheme: 'dark' }}
               />
-              <span className="text-xs shrink-0" style={{ color: '#555570' }}>→</span>
+              <span className="text-xs shrink-0" style={{ color: c.textTertiary }}>→</span>
               <input
                 type="date"
                 value={customEnd}
                 onChange={(e) => setCustomEnd(e.target.value)}
                 className="flex-1 px-3 py-2 rounded-xl text-xs outline-none"
-                style={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40', color: '#e8e8f0', colorScheme: 'dark' }}
+                style={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}`, color: c.textPrimary, colorScheme: 'dark' }}
               />
             </div>
           )}
@@ -269,12 +272,12 @@ export default function DashboardPage() {
         <div className="px-1 py-4">
           <ResponsiveContainer width="100%" height={220}>
             <ComposedChart data={dailyChartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a40" vertical={false} />
-              <XAxis dataKey="label" tick={{ fill: '#555570', fontSize: 10 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-              <YAxis tick={{ fill: '#555570', fontSize: 10 }} axisLine={false} tickLine={false}
+              <CartesianGrid strokeDasharray="3 3" stroke={c.borderDefault} vertical={false} />
+              <XAxis dataKey="label" tick={{ fill: c.textTertiary, fontSize: 10 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+              <YAxis tick={{ fill: c.textTertiary, fontSize: 10 }} axisLine={false} tickLine={false}
                 tickFormatter={(v) => v === 0 ? '0' : `${(v / 1000).toFixed(0)}k`} width={32} />
               <Tooltip
-                contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40', borderRadius: 12, color: '#e8e8f0', fontSize: 12 }}
+                contentStyle={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}`, borderRadius: 12, color: c.textPrimary, fontSize: 12 }}
                 labelFormatter={(d) => d}
                 formatter={(value, name) => [
                   formatCurrency(Number(value ?? 0), 'USD'),
@@ -282,10 +285,10 @@ export default function DashboardPage() {
                 ]}
               />
               <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
-                formatter={(value) => <span style={{ color: '#8888a0' }}>{value.charAt(0).toUpperCase() + value.slice(1)}</span>} />
+                formatter={(value) => <span style={{ color: c.textSecondary }}>{value.charAt(0).toUpperCase() + value.slice(1)}</span>} />
               <Bar dataKey="income" fill="#22c55e" opacity={0.85} radius={[3, 3, 0, 0]} maxBarSize={14} />
               <Bar dataKey="expense" fill="#ef4444" opacity={0.85} radius={[3, 3, 0, 0]} maxBarSize={14} />
-              <Line dataKey="net" type="monotone" stroke="#7c3aed" strokeWidth={2} dot={false} />
+              <Line dataKey="net" type="monotone" stroke={c.accent} strokeWidth={2} dot={false} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -294,17 +297,17 @@ export default function DashboardPage() {
       {/* Content grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Recent Transactions */}
-        <div className="lg:col-span-2 rounded-2xl" style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}>
-          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #2a2a40' }}>
-            <h2 className="text-sm font-semibold" style={{ color: '#e8e8f0' }}>Recent Transactions</h2>
-            <a href="/transactions" className="text-xs" style={{ color: '#7c3aed' }}>View all</a>
+        <div className="lg:col-span-2 rounded-2xl" style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}>
+          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${c.borderDefault}` }}>
+            <h2 className="text-sm font-semibold" style={{ color: c.textPrimary }}>Recent Transactions</h2>
+            <a href="/transactions" className="text-xs" style={{ color: c.accent }}>View all</a>
           </div>
           <div className="px-2 py-2">
             {recentTransactions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-3" style={{ backgroundColor: '#1a1a2e' }}>💸</div>
-                <p className="text-sm font-medium" style={{ color: '#e8e8f0' }}>No transactions yet</p>
-                <p className="text-xs mt-1" style={{ color: '#555570' }}>Add your first transaction to get started</p>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-3" style={{ backgroundColor: c.bgTertiary }}>💸</div>
+                <p className="text-sm font-medium" style={{ color: c.textPrimary }}>No transactions yet</p>
+                <p className="text-xs mt-1" style={{ color: c.textTertiary }}>Add your first transaction to get started</p>
               </div>
             ) : (
               recentTransactions.map((tx) => (
@@ -317,17 +320,17 @@ export default function DashboardPage() {
         </div>
 
         {/* Accounts Summary */}
-        <div className="rounded-2xl" style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}>
-          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #2a2a40' }}>
-            <h2 className="text-sm font-semibold" style={{ color: '#e8e8f0' }}>Accounts</h2>
-            <a href="/accounts" className="text-xs" style={{ color: '#7c3aed' }}>Manage</a>
+        <div className="rounded-2xl" style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}>
+          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${c.borderDefault}` }}>
+            <h2 className="text-sm font-semibold" style={{ color: c.textPrimary }}>Accounts</h2>
+            <a href="/accounts" className="text-xs" style={{ color: c.accent }}>Manage</a>
           </div>
           <div className="p-3 space-y-2">
             {(accounts?.length ?? 0) === 0 ? (
               <div className="flex flex-col items-center justify-center py-10">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-3" style={{ backgroundColor: '#1a1a2e' }}>🏦</div>
-                <p className="text-sm font-medium" style={{ color: '#e8e8f0' }}>No accounts yet</p>
-                <a href="/accounts" className="text-xs mt-1" style={{ color: '#7c3aed' }}>Add an account</a>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-3" style={{ backgroundColor: c.bgTertiary }}>🏦</div>
+                <p className="text-sm font-medium" style={{ color: c.textPrimary }}>No accounts yet</p>
+                <a href="/accounts" className="text-xs mt-1" style={{ color: c.accent }}>Add an account</a>
               </div>
             ) : (
               accounts?.map((acc) => {
@@ -339,15 +342,15 @@ export default function DashboardPage() {
                   }, 0) ?? 0;
                 const balance = acc.initialBalance + txTotal;
                 return (
-                  <div key={acc.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#1a1a2e' }}>
+                  <div key={acc.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: c.bgTertiary }}>
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0" style={{ backgroundColor: acc.color + '20' }}>
                       {acc.icon}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: '#e8e8f0' }}>{acc.name}</p>
-                      <p className="text-xs capitalize" style={{ color: '#555570' }}>{acc.type.replace('_', ' ')}</p>
+                      <p className="text-sm font-medium truncate" style={{ color: c.textPrimary }}>{acc.name}</p>
+                      <p className="text-xs capitalize" style={{ color: c.textTertiary }}>{acc.type.replace('_', ' ')}</p>
                     </div>
-                    <span className="text-sm font-semibold shrink-0" style={{ color: balance >= 0 ? '#e8e8f0' : '#ef4444' }}>
+                    <span className="text-sm font-semibold shrink-0" style={{ color: balance >= 0 ? c.textPrimary : '#ef4444' }}>
                       {formatCurrency(balance, acc.currency)}
                     </span>
                   </div>
@@ -359,20 +362,20 @@ export default function DashboardPage() {
       </div>
 
       {/* Savings Goals */}
-      <div className="rounded-2xl" style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}>
-        <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #2a2a40' }}>
+      <div className="rounded-2xl" style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}>
+        <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${c.borderDefault}` }}>
           <div>
-            <h2 className="text-sm font-semibold" style={{ color: '#e8e8f0' }}>Savings Goals</h2>
-            <p className="text-xs mt-0.5" style={{ color: '#555570' }}>Progress toward your targets</p>
+            <h2 className="text-sm font-semibold" style={{ color: c.textPrimary }}>Savings Goals</h2>
+            <p className="text-xs mt-0.5" style={{ color: c.textTertiary }}>Progress toward your targets</p>
           </div>
-          <a href="/goals" className="text-xs" style={{ color: '#7c3aed' }}>Manage</a>
+          <a href="/goals" className="text-xs" style={{ color: c.accent }}>Manage</a>
         </div>
 
         {(savingsGoals?.length ?? 0) === 0 ? (
           <div className="flex flex-col items-center justify-center py-10">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-3" style={{ backgroundColor: '#1a1a2e' }}>🎯</div>
-            <p className="text-sm font-medium" style={{ color: '#e8e8f0' }}>No goals yet</p>
-            <a href="/goals" className="text-xs mt-1" style={{ color: '#7c3aed' }}>Create your first goal</a>
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-3" style={{ backgroundColor: c.bgTertiary }}>🎯</div>
+            <p className="text-sm font-medium" style={{ color: c.textPrimary }}>No goals yet</p>
+            <a href="/goals" className="text-xs mt-1" style={{ color: c.accent }}>Create your first goal</a>
           </div>
         ) : (
           <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -380,20 +383,20 @@ export default function DashboardPage() {
               const pct = goal.targetAmount > 0 ? Math.min(100, (goal.currentAmount / goal.targetAmount) * 100) : 0;
               const remaining = goal.targetAmount - goal.currentAmount;
               const daysLeft = goal.deadline ? Math.ceil((new Date(goal.deadline).getTime() - Date.now()) / 86400000) : null;
-              const barColor = pct >= 100 ? '#22c55e' : pct >= 66 ? '#7c3aed' : pct >= 33 ? '#f59e0b' : '#ef4444';
+              const barColor = pct >= 100 ? '#22c55e' : pct >= 66 ? c.accent : pct >= 33 ? '#f59e0b' : '#ef4444';
 
               return (
-                <div key={goal.id} className="rounded-xl p-4 flex flex-col gap-3" style={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40' }}>
+                <div key={goal.id} className="rounded-xl p-4 flex flex-col gap-3" style={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}` }}>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style={{ backgroundColor: goal.color + '20' }}>
                       {goal.icon}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate" style={{ color: '#e8e8f0' }}>{goal.name}</p>
-                      <p className="text-xs" style={{ color: '#8888a0' }}>
+                      <p className="text-sm font-semibold truncate" style={{ color: c.textPrimary }}>{goal.name}</p>
+                      <p className="text-xs" style={{ color: c.textSecondary }}>
                         {goal.currency}
                         {daysLeft !== null && (
-                          <span style={{ color: daysLeft < 30 ? '#f59e0b' : '#555570' }}>
+                          <span style={{ color: daysLeft < 30 ? '#f59e0b' : c.textTertiary }}>
                             {' '}· {daysLeft > 0 ? `${daysLeft}d left` : 'Overdue'}
                           </span>
                         )}
@@ -403,12 +406,12 @@ export default function DashboardPage() {
                       {pct.toFixed(0)}%
                     </span>
                   </div>
-                  <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#2a2a40' }}>
+                  <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: c.borderDefault }}>
                     <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: barColor }} />
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <div><span style={{ color: '#555570' }}>Saved </span><span className="font-semibold" style={{ color: '#e8e8f0' }}>{formatCurrency(goal.currentAmount, goal.currency)}</span></div>
-                    <div className="text-right"><span style={{ color: '#555570' }}>Needed </span><span className="font-semibold" style={{ color: remaining > 0 ? '#f59e0b' : '#22c55e' }}>{remaining > 0 ? formatCurrency(remaining, goal.currency) : '✓ Done'}</span></div>
+                    <div><span style={{ color: c.textTertiary }}>Saved </span><span className="font-semibold" style={{ color: c.textPrimary }}>{formatCurrency(goal.currentAmount, goal.currency)}</span></div>
+                    <div className="text-right"><span style={{ color: c.textTertiary }}>Needed </span><span className="font-semibold" style={{ color: remaining > 0 ? '#f59e0b' : '#22c55e' }}>{remaining > 0 ? formatCurrency(remaining, goal.currency) : '✓ Done'}</span></div>
                   </div>
                 </div>
               );

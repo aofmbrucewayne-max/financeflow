@@ -2,13 +2,18 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { FlaskConical, Trash2, Download, Upload } from 'lucide-react';
+import { FlaskConical, Trash2, Download, Upload, Palette } from 'lucide-react';
 import { db } from '@/lib/db';
 import { seedDemoData } from '@/lib/utils/demoSeed';
+import { useThemeStore } from '@/lib/stores/themeStore';
+import { themeMetas } from '@/lib/themes';
 
 export default function SettingsPage() {
   const [loadingDemo, setLoadingDemo] = useState(false);
   const [loadingClear, setLoadingClear] = useState(false);
+  const c = useThemeStore((s) => s.colors);
+  const themeId = useThemeStore((s) => s.themeId);
+  const setTheme = useThemeStore((s) => s.setTheme);
 
   const handleLoadDemo = async () => {
     if (!confirm('This will replace all your accounts, transactions, budgets and goals with demo data. Continue?')) return;
@@ -91,20 +96,60 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: '#e8e8f0' }}>Settings</h1>
-        <p className="text-sm mt-0.5" style={{ color: '#8888a0' }}>Manage your data and preferences</p>
+        <h1 className="text-2xl font-bold" style={{ color: c.textPrimary }}>Settings</h1>
+        <p className="text-sm mt-0.5" style={{ color: c.textSecondary }}>Manage your data and preferences</p>
       </div>
 
+      {/* Theme Selector */}
+      <section className="rounded-2xl overflow-hidden" style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}>
+        <div className="px-6 py-4" style={{ borderBottom: `1px solid ${c.borderDefault}` }}>
+          <div className="flex items-center gap-2">
+            <Palette className="w-4 h-4" style={{ color: c.accent }} />
+            <h2 className="text-sm font-semibold" style={{ color: c.textPrimary }}>Theme</h2>
+          </div>
+          <p className="text-xs mt-0.5" style={{ color: c.textTertiary }}>Choose the look and feel of the app</p>
+        </div>
+        <div className="px-6 py-5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {themeMetas.map((theme) => {
+              const isActive = themeId === theme.id;
+              return (
+                <button
+                  key={theme.id}
+                  onClick={() => setTheme(theme.id)}
+                  className="flex flex-col items-center gap-2.5 p-4 rounded-xl transition-all"
+                  style={{
+                    backgroundColor: isActive ? c.accent + '15' : c.bgTertiary,
+                    border: isActive ? `2px solid ${c.accent}` : `2px solid transparent`,
+                  }}
+                >
+                  <div
+                    className="w-full h-10 rounded-lg"
+                    style={{ background: theme.preview }}
+                  />
+                  <span
+                    className="text-xs font-medium"
+                    style={{ color: isActive ? c.accent : c.textSecondary }}
+                  >
+                    {theme.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* Demo Data */}
-      <section className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}>
-        <div className="px-6 py-4" style={{ borderBottom: '1px solid #2a2a40' }}>
-          <h2 className="text-sm font-semibold" style={{ color: '#e8e8f0' }}>Demo Data</h2>
-          <p className="text-xs mt-0.5" style={{ color: '#555570' }}>Load a full year of realistic sample data to explore all features</p>
+      <section className="rounded-2xl overflow-hidden" style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}>
+        <div className="px-6 py-4" style={{ borderBottom: `1px solid ${c.borderDefault}` }}>
+          <h2 className="text-sm font-semibold" style={{ color: c.textPrimary }}>Demo Data</h2>
+          <p className="text-xs mt-0.5" style={{ color: c.textTertiary }}>Load a full year of realistic sample data to explore all features</p>
         </div>
         <div className="px-6 py-5">
           <div
             className="rounded-xl p-4 mb-4 text-sm"
-            style={{ backgroundColor: '#7c3aed15', border: '1px solid #7c3aed30', color: '#a78bfa' }}
+            style={{ backgroundColor: c.accent + '15', border: `1px solid ${c.accent}30`, color: c.accent }}
           >
             Loads: <strong>4 accounts</strong> · <strong>~300 transactions</strong> · <strong>8 monthly budgets</strong> · <strong>4 savings goals</strong> · 12 months of income &amp; expenses
           </div>
@@ -112,9 +157,9 @@ export default function SettingsPage() {
             onClick={handleLoadDemo}
             disabled={loadingDemo}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50 transition-colors"
-            style={{ backgroundColor: '#7c3aed', color: '#fff' }}
-            onMouseEnter={(e) => { if (!loadingDemo) (e.currentTarget as HTMLElement).style.backgroundColor = '#6d28d9'; }}
-            onMouseLeave={(e) => { if (!loadingDemo) (e.currentTarget as HTMLElement).style.backgroundColor = '#7c3aed'; }}
+            style={{ backgroundColor: c.accent, color: '#fff' }}
+            onMouseEnter={(e) => { if (!loadingDemo) (e.currentTarget as HTMLElement).style.backgroundColor = c.accentHover; }}
+            onMouseLeave={(e) => { if (!loadingDemo) (e.currentTarget as HTMLElement).style.backgroundColor = c.accent; }}
           >
             <FlaskConical className="w-4 h-4" />
             {loadingDemo ? 'Loading demo data…' : 'Load 1 Year of Demo Data'}
@@ -123,10 +168,10 @@ export default function SettingsPage() {
       </section>
 
       {/* Data Export / Import */}
-      <section className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}>
-        <div className="px-6 py-4" style={{ borderBottom: '1px solid #2a2a40' }}>
-          <h2 className="text-sm font-semibold" style={{ color: '#e8e8f0' }}>Backup &amp; Restore</h2>
-          <p className="text-xs mt-0.5" style={{ color: '#555570' }}>Export all your data as JSON or restore from a previous backup</p>
+      <section className="rounded-2xl overflow-hidden" style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}>
+        <div className="px-6 py-4" style={{ borderBottom: `1px solid ${c.borderDefault}` }}>
+          <h2 className="text-sm font-semibold" style={{ color: c.textPrimary }}>Backup &amp; Restore</h2>
+          <p className="text-xs mt-0.5" style={{ color: c.textTertiary }}>Export all your data as JSON or restore from a previous backup</p>
         </div>
         <div className="px-6 py-5 flex gap-3 flex-wrap">
           <button
@@ -153,10 +198,10 @@ export default function SettingsPage() {
       </section>
 
       {/* Danger Zone */}
-      <section className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#12121a', border: '1px solid #ef444440' }}>
+      <section className="rounded-2xl overflow-hidden" style={{ backgroundColor: c.bgSecondary, border: '1px solid #ef444440' }}>
         <div className="px-6 py-4" style={{ borderBottom: '1px solid #ef444430' }}>
           <h2 className="text-sm font-semibold" style={{ color: '#ef4444' }}>Danger Zone</h2>
-          <p className="text-xs mt-0.5" style={{ color: '#555570' }}>Irreversible actions — proceed with caution</p>
+          <p className="text-xs mt-0.5" style={{ color: c.textTertiary }}>Irreversible actions — proceed with caution</p>
         </div>
         <div className="px-6 py-5">
           <button

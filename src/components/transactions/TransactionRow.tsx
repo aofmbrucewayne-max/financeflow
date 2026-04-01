@@ -5,6 +5,7 @@ import type { Transaction, Category, Account } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils/currency';
 import { formatDate } from '@/lib/utils/dates';
 import { cn } from '@/lib/utils';
+import { useThemeStore } from '@/lib/stores/themeStore';
 
 interface TransactionRowProps {
   transaction: Transaction;
@@ -23,6 +24,7 @@ export function TransactionRow({
   onDelete,
   showDate = false,
 }: TransactionRowProps) {
+  const c = useThemeStore((s) => s.colors);
   const isIncome = transaction.type === 'income';
   const isTransfer = transaction.type === 'transfer';
 
@@ -39,7 +41,7 @@ export function TransactionRow({
       className="group flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-150 cursor-pointer"
       style={{ backgroundColor: 'transparent' }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = '#1a1a2e';
+        (e.currentTarget as HTMLElement).style.backgroundColor = c.bgTertiary;
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
@@ -48,7 +50,7 @@ export function TransactionRow({
       {/* Category Icon */}
       <div
         className="flex items-center justify-center w-10 h-10 rounded-xl text-lg shrink-0"
-        style={{ backgroundColor: '#22223a' }}
+        style={{ backgroundColor: c.bgElevated }}
       >
         {category?.icon ?? (isTransfer ? '↔️' : '💳')}
       </div>
@@ -58,7 +60,7 @@ export function TransactionRow({
         <div className="flex items-center gap-2">
           <span
             className="text-sm font-medium truncate"
-            style={{ color: '#e8e8f0' }}
+            style={{ color: c.textPrimary }}
           >
             {isTransfer ? 'Transfer' : (category?.name ?? 'Uncategorized')}
           </span>
@@ -69,8 +71,8 @@ export function TransactionRow({
                   key={tag}
                   className="text-xs px-1.5 py-0.5 rounded"
                   style={{
-                    backgroundColor: '#22223a',
-                    color: '#8888a0',
+                    backgroundColor: c.bgElevated,
+                    color: c.textSecondary,
                   }}
                 >
                   {tag}
@@ -83,13 +85,13 @@ export function TransactionRow({
           {transaction.note && (
             <span
               className="text-xs truncate"
-              style={{ color: '#8888a0' }}
+              style={{ color: c.textSecondary }}
             >
               {transaction.note}
             </span>
           )}
           {showDate && (
-            <span className="text-xs shrink-0" style={{ color: '#555570' }}>
+            <span className="text-xs shrink-0" style={{ color: c.textTertiary }}>
               {formatDate(transaction.date, 'MMM d')}
             </span>
           )}
@@ -101,8 +103,8 @@ export function TransactionRow({
         <span
           className="hidden sm:block text-xs px-2 py-1 rounded-lg shrink-0"
           style={{
-            backgroundColor: '#22223a',
-            color: '#8888a0',
+            backgroundColor: c.bgElevated,
+            color: c.textSecondary,
           }}
         >
           {account.name}
@@ -126,14 +128,14 @@ export function TransactionRow({
               onEdit(transaction.id);
             }}
             className="p-2 md:p-1.5 rounded-lg transition-colors"
-            style={{ color: '#c0c0d8', backgroundColor: '#22223a' }}
+            style={{ color: c.textPrimary, backgroundColor: c.bgElevated }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor = '#2a2a40';
+              (e.currentTarget as HTMLElement).style.backgroundColor = c.borderDefault;
               (e.currentTarget as HTMLElement).style.color = '#ffffff';
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor = '#22223a';
-              (e.currentTarget as HTMLElement).style.color = '#c0c0d8';
+              (e.currentTarget as HTMLElement).style.backgroundColor = c.bgElevated;
+              (e.currentTarget as HTMLElement).style.color = c.textPrimary;
             }}
           >
             <Pencil className="w-3.5 h-3.5" />

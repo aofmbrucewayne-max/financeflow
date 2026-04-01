@@ -4,6 +4,7 @@ import './globals.css';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AppInitializer } from '@/components/layout/AppInitializer';
 import { Toaster } from '@/components/ui/sonner';
+import { ThemeProvider } from '@/components/layout/ThemeProvider';
 
 const inter = Inter({
   variable: '--font-sans',
@@ -46,6 +47,7 @@ export default function RootLayout({
         style={{ backgroundColor: '#0a0a0f', color: '#e8e8f0' }}
       >
         <AppInitializer />
+        <ThemeProvider />
         <Sidebar />
 
         {/* Desktop: offset sidebar. Mobile: offset top bar + bottom nav */}

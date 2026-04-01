@@ -5,12 +5,14 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus, Search } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { db } from '@/lib/db';
+import { useThemeStore } from '@/lib/stores/themeStore';
 import { TransactionModal } from '@/components/transactions/TransactionModal';
 import { TransactionRow } from '@/components/transactions/TransactionRow';
 
 type FilterType = 'all' | 'income' | 'expense' | 'transfer';
 
 export default function TransactionsPage() {
+  const c = useThemeStore((s) => s.colors);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<FilterType>('all');
@@ -41,7 +43,7 @@ export default function TransactionsPage() {
     return all;
   }, [typeFilter, accountFilter, dateFrom, dateTo, search]);
 
-  const categoryMap = new Map(categories?.map((c) => [c.id, c]) ?? []);
+  const categoryMap = new Map(categories?.map((cat) => [cat.id, cat]) ?? []);
   const accountMap = new Map(accounts?.map((a) => [a.id, a]) ?? []);
 
   // Group by date
@@ -64,7 +66,7 @@ export default function TransactionsPage() {
   };
 
   const filterTypes: { label: string; value: FilterType; color: string }[] = [
-    { label: 'All', value: 'all', color: '#8888a0' },
+    { label: 'All', value: 'all', color: c.textSecondary },
     { label: 'Income', value: 'income', color: '#22c55e' },
     { label: 'Expense', value: 'expense', color: '#ef4444' },
     { label: 'Transfer', value: 'transfer', color: '#3b82f6' },
@@ -75,19 +77,19 @@ export default function TransactionsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: '#e8e8f0' }}>
+          <h1 className="text-2xl font-bold" style={{ color: c.textPrimary }}>
             Transactions
           </h1>
-          <p className="text-sm mt-0.5" style={{ color: '#8888a0' }}>
+          <p className="text-sm mt-0.5" style={{ color: c.textSecondary }}>
             {transactions?.length ?? 0} transaction{(transactions?.length ?? 0) !== 1 ? 's' : ''}
           </p>
         </div>
         <button
           onClick={() => { setEditingId(null); setModalOpen(true); }}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
-          style={{ backgroundColor: '#7c3aed', color: '#ffffff' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#6d28d9'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#7c3aed'; }}
+          style={{ backgroundColor: c.accent, color: '#ffffff' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.accentHover; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.accent; }}
         >
           <Plus className="w-4 h-4" />
           Add Transaction
@@ -97,7 +99,7 @@ export default function TransactionsPage() {
       {/* Filters */}
       <div
         className="rounded-2xl p-4 space-y-3"
-        style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}
+        style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}
       >
         {/* Type toggles */}
         <div className="flex gap-2 flex-wrap">
@@ -109,7 +111,7 @@ export default function TransactionsPage() {
               style={
                 typeFilter === ft.value
                   ? { backgroundColor: ft.color + '20', color: ft.color, border: `1px solid ${ft.color}40` }
-                  : { backgroundColor: '#1a1a2e', color: '#8888a0', border: '1px solid transparent' }
+                  : { backgroundColor: c.bgTertiary, color: c.textSecondary, border: '1px solid transparent' }
               }
             >
               {ft.label}
@@ -119,15 +121,15 @@ export default function TransactionsPage() {
 
         {/* Search & other filters */}
         <div className="flex gap-3 flex-wrap">
-          <div className="flex items-center gap-2 flex-1 min-w-48 px-3 py-2 rounded-xl" style={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40' }}>
-            <Search className="w-3.5 h-3.5 shrink-0" style={{ color: '#555570' }} />
+          <div className="flex items-center gap-2 flex-1 min-w-48 px-3 py-2 rounded-xl" style={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}` }}>
+            <Search className="w-3.5 h-3.5 shrink-0" style={{ color: c.textTertiary }} />
             <input
               type="text"
               placeholder="Search notes, tags..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="flex-1 bg-transparent text-sm outline-none"
-              style={{ color: '#e8e8f0' }}
+              style={{ color: c.textPrimary }}
             />
           </div>
           <input
@@ -135,7 +137,7 @@ export default function TransactionsPage() {
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
             className="px-3 py-2 rounded-xl text-xs outline-none"
-            style={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40', color: '#e8e8f0', colorScheme: 'dark' }}
+            style={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}`, color: c.textPrimary, colorScheme: 'dark' }}
             placeholder="From"
           />
           <input
@@ -143,14 +145,14 @@ export default function TransactionsPage() {
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
             className="px-3 py-2 rounded-xl text-xs outline-none"
-            style={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40', color: '#e8e8f0', colorScheme: 'dark' }}
+            style={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}`, color: c.textPrimary, colorScheme: 'dark' }}
             placeholder="To"
           />
           <select
             value={accountFilter}
             onChange={(e) => setAccountFilter(e.target.value)}
             className="px-3 py-2 rounded-xl text-xs outline-none"
-            style={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a40', color: '#e8e8f0' }}
+            style={{ backgroundColor: c.bgTertiary, border: `1px solid ${c.borderDefault}`, color: c.textPrimary }}
           >
             <option value="">All Accounts</option>
             {accounts?.map((a) => (
@@ -165,20 +167,20 @@ export default function TransactionsPage() {
       {/* Transaction List */}
       {transactions === undefined ? (
         <div className="flex items-center justify-center h-32">
-          <div className="w-6 h-6 rounded-full border-2 animate-spin" style={{ borderColor: '#7c3aed', borderTopColor: 'transparent' }} />
+          <div className="w-6 h-6 rounded-full border-2 animate-spin" style={{ borderColor: c.accent, borderTopColor: 'transparent' }} />
         </div>
       ) : transactions.length === 0 ? (
         <div
           className="flex flex-col items-center justify-center py-20 rounded-2xl"
-          style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}
+          style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}
         >
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-4" style={{ backgroundColor: '#1a1a2e' }}>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-4" style={{ backgroundColor: c.bgTertiary }}>
             💸
           </div>
-          <p className="text-base font-medium" style={{ color: '#e8e8f0' }}>
+          <p className="text-base font-medium" style={{ color: c.textPrimary }}>
             No transactions found
           </p>
-          <p className="text-sm mt-1" style={{ color: '#555570' }}>
+          <p className="text-sm mt-1" style={{ color: c.textTertiary }}>
             {search || typeFilter !== 'all' || accountFilter ? 'Try adjusting your filters' : 'Add your first transaction'}
           </p>
         </div>
@@ -199,12 +201,12 @@ export default function TransactionsPage() {
             }, 0);
 
             return (
-              <div key={date} className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40' }}>
+              <div key={date} className="rounded-2xl overflow-hidden" style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}>
                 <div
                   className="flex items-center justify-between px-5 py-3"
-                  style={{ borderBottom: '1px solid #2a2a40', backgroundColor: '#0a0a0f' }}
+                  style={{ borderBottom: `1px solid ${c.borderDefault}`, backgroundColor: c.bgPrimary }}
                 >
-                  <span className="text-xs font-medium" style={{ color: '#8888a0' }}>
+                  <span className="text-xs font-medium" style={{ color: c.textSecondary }}>
                     {dateLabel}
                   </span>
                   <span

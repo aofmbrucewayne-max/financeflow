@@ -10,6 +10,7 @@ import { useAccounts } from '@/lib/hooks/useAccounts';
 import { useCategories } from '@/lib/hooks/useCategories';
 import { toDateString } from '@/lib/utils/dates';
 import { SUPPORTED_CURRENCIES } from '@/lib/utils/currency';
+import { useThemeStore } from '@/lib/stores/themeStore';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -33,23 +34,24 @@ const defaultForm = {
   tags: '' as string,
 };
 
-const inputStyle = {
-  width: '100%',
-  backgroundColor: '#1a1a2e',
-  border: '1px solid #2a2a40',
-  color: '#e8e8f0',
-  borderRadius: '12px',
-  padding: '10px 12px',
-  fontSize: '14px',
-  outline: 'none',
-  boxSizing: 'border-box' as const,
-};
-
 export function TransactionModal({ isOpen, onClose, editingId }: TransactionModalProps) {
   const accounts = useAccounts();
   const allCategories = useCategories();
   const [form, setForm] = useState(defaultForm);
   const [isSaving, setIsSaving] = useState(false);
+  const c = useThemeStore((s) => s.colors);
+
+  const inputStyle = {
+    width: '100%',
+    backgroundColor: c.bgTertiary,
+    border: `1px solid ${c.borderDefault}`,
+    color: c.textPrimary,
+    borderRadius: '12px',
+    padding: '10px 12px',
+    fontSize: '14px',
+    outline: 'none',
+    boxSizing: 'border-box' as const,
+  };
 
   const isEditing = !!editingId;
 
@@ -199,22 +201,22 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
       {/* Sheet slides up from bottom on mobile, centered on desktop */}
       <div
         className="w-full sm:max-w-lg sm:mx-4 sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden"
-        style={{ backgroundColor: '#12121a', border: '1px solid #2a2a40', maxHeight: '92dvh' }}
+        style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}`, maxHeight: '92dvh' }}
       >
         {/* Drag handle (mobile) */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
-          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: '#3a3a55' }} />
+          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: c.borderHover }} />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: '1px solid #2a2a40' }}>
-          <h2 className="text-base font-semibold" style={{ color: '#e8e8f0' }}>
+        <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: `1px solid ${c.borderDefault}` }}>
+          <h2 className="text-base font-semibold" style={{ color: c.textPrimary }}>
             {isEditing ? 'Edit Transaction' : 'New Transaction'}
           </h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg"
-            style={{ color: '#8888a0' }}
+            style={{ color: c.textSecondary }}
           >
             <X className="w-4 h-4" />
           </button>
@@ -224,7 +226,7 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
         <div className="overflow-y-auto px-5 py-4 space-y-4" style={{ maxHeight: 'calc(92dvh - 130px)' }}>
 
           {/* Type Tabs */}
-          <div className="flex rounded-xl p-1 gap-1" style={{ backgroundColor: '#0a0a0f' }}>
+          <div className="flex rounded-xl p-1 gap-1" style={{ backgroundColor: c.bgPrimary }}>
             {(['expense', 'income', 'transfer'] as TransactionType[]).map((t) => (
               <button
                 key={t}
@@ -233,7 +235,7 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
                 style={
                   form.type === t
                     ? { backgroundColor: typeColors[t] + '22', color: typeColors[t], border: `1px solid ${typeColors[t]}44` }
-                    : { color: '#8888a0' }
+                    : { color: c.textSecondary }
                 }
               >
                 {t}
@@ -243,7 +245,7 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
 
           {/* Amount — full width input, currency below on same row but fixed */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Amount</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Amount</label>
             <div className="flex gap-2">
               <input
                 type="number"
@@ -261,8 +263,8 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
                   padding: '12px 14px',
                   color: typeColors[form.type],
                 }}
-                onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
-                onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
+                onFocus={(e) => { (e.target as HTMLElement).style.borderColor = c.accent; }}
+                onBlur={(e) => { (e.target as HTMLElement).style.borderColor = c.borderDefault; }}
               />
               <select
                 value={form.currency}
@@ -275,8 +277,8 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
                   fontWeight: 600,
                 }}
               >
-                {SUPPORTED_CURRENCIES.map((c) => (
-                  <option key={c.code} value={c.code}>{c.code}</option>
+                {SUPPORTED_CURRENCIES.map((cur) => (
+                  <option key={cur.code} value={cur.code}>{cur.code}</option>
                 ))}
               </select>
             </div>
@@ -284,7 +286,7 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
 
           {/* Account */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>
               {form.type === 'transfer' ? 'From Account' : 'Account'}
             </label>
             <select
@@ -302,7 +304,7 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
           {/* To Account — transfer only */}
           {form.type === 'transfer' && (
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>To Account</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>To Account</label>
               <select
                 value={form.toAccountId}
                 onChange={(e) => setForm((prev) => ({ ...prev, toAccountId: e.target.value }))}
@@ -319,8 +321,8 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
           {/* Fee — transfer only */}
           {form.type === 'transfer' && (
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>
-                Fee / Commission <span style={{ color: '#555570' }}>(optional)</span>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>
+                Fee / Commission <span style={{ color: c.textTertiary }}>(optional)</span>
               </label>
               <div className="flex gap-2">
                 <input
@@ -334,10 +336,10 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
                   style={{
                     ...inputStyle,
                     flex: 1,
-                    color: form.fee && Number(form.fee) > 0 ? '#f43f5e' : '#e8e8f0',
+                    color: form.fee && Number(form.fee) > 0 ? '#f43f5e' : c.textPrimary,
                   }}
-                  onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
-                  onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
+                  onFocus={(e) => { (e.target as HTMLElement).style.borderColor = c.accent; }}
+                  onBlur={(e) => { (e.target as HTMLElement).style.borderColor = c.borderDefault; }}
                 />
                 <div
                   className="flex items-center gap-1.5 px-3 rounded-xl text-xs shrink-0"
@@ -347,7 +349,7 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
                 </div>
               </div>
               {form.fee && Number(form.fee) > 0 && (
-                <p className="text-xs mt-1.5" style={{ color: '#555570' }}>
+                <p className="text-xs mt-1.5" style={{ color: c.textTertiary }}>
                   Will be tracked as expense under &quot;Fees &amp; Commissions&quot;
                 </p>
               )}
@@ -358,7 +360,7 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
           {form.type !== 'transfer' && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Category</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Category</label>
                 <select
                   value={form.categoryId}
                   onChange={(e) => setForm((prev) => ({ ...prev, categoryId: e.target.value, subcategoryId: '' }))}
@@ -371,7 +373,7 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Subcategory</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Subcategory</label>
                 <select
                   value={form.subcategoryId}
                   onChange={(e) => setForm((prev) => ({ ...prev, subcategoryId: e.target.value }))}
@@ -389,7 +391,7 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
 
           {/* Date */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Date</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Date</label>
             <input
               type="date"
               value={form.date}
@@ -400,39 +402,39 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
 
           {/* Note */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Note</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Note</label>
             <textarea
               placeholder="Add a note..."
               value={form.note}
               onChange={(e) => setForm((prev) => ({ ...prev, note: e.target.value }))}
               rows={2}
               style={{ ...inputStyle, resize: 'none' }}
-              onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
-              onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
+              onFocus={(e) => { (e.target as HTMLElement).style.borderColor = c.accent; }}
+              onBlur={(e) => { (e.target as HTMLElement).style.borderColor = c.borderDefault; }}
             />
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#8888a0' }}>Tags (comma-separated)</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>Tags (comma-separated)</label>
             <input
               type="text"
               placeholder="vacation, work, groceries"
               value={form.tags}
               onChange={(e) => setForm((prev) => ({ ...prev, tags: e.target.value }))}
               style={inputStyle}
-              onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#7c3aed'; }}
-              onBlur={(e) => { (e.target as HTMLElement).style.borderColor = '#2a2a40'; }}
+              onFocus={(e) => { (e.target as HTMLElement).style.borderColor = c.accent; }}
+              onBlur={(e) => { (e.target as HTMLElement).style.borderColor = c.borderDefault; }}
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 px-5 py-4" style={{ borderTop: '1px solid #2a2a40' }}>
+        <div className="flex gap-3 px-5 py-4" style={{ borderTop: `1px solid ${c.borderDefault}` }}>
           <button
             onClick={onClose}
             className="flex-1 py-3 rounded-xl text-sm font-medium"
-            style={{ backgroundColor: '#1a1a2e', color: '#8888a0', border: '1px solid #2a2a40' }}
+            style={{ backgroundColor: c.bgTertiary, color: c.textSecondary, border: `1px solid ${c.borderDefault}` }}
           >
             Cancel
           </button>
@@ -440,7 +442,7 @@ export function TransactionModal({ isOpen, onClose, editingId }: TransactionModa
             onClick={handleSave}
             disabled={isSaving}
             className="flex-1 py-3 rounded-xl text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #3b82f6)', color: '#fff' }}
+            style={{ background: c.gradient, color: '#fff' }}
           >
             <Plus className="w-4 h-4" />
             {isSaving ? 'Saving…' : isEditing ? 'Update' : 'Add Transaction'}
