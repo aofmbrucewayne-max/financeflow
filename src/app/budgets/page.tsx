@@ -5,7 +5,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
-import { format, addMonths, subMonths, parseISO } from 'date-fns';
+import { format, addMonths, subMonths } from 'date-fns';
 import { db } from '@/lib/db';
 import { useBudgets } from '@/lib/hooks/useBudgets';
 import { formatCurrency } from '@/lib/utils/currency';
@@ -245,10 +245,10 @@ export default function BudgetsPage() {
                   </div>
                   <button
                     onClick={() => handleDeleteBudget(budget.id)}
-                    className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ color: '#8888a0' }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#ef444420'; (e.currentTarget as HTMLElement).style.color = '#ef4444'; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#8888a0'; }}
+                    className="p-2 md:p-1.5 rounded-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                    style={{ color: '#f87171', backgroundColor: '#ef444418' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#ef444430'; (e.currentTarget as HTMLElement).style.color = '#ef4444'; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#ef444418'; (e.currentTarget as HTMLElement).style.color = '#f87171'; }}
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>

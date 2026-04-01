@@ -88,6 +88,7 @@ export function AccountModal({ isOpen, onClose, editingId }: AccountModalProps) 
       if (editingId) {
         const existing = await db.accounts.get(editingId);
         accountData.createdAt = existing?.createdAt ?? now;
+        accountData.isArchived = existing?.isArchived ?? false;
         await db.accounts.put(accountData);
         toast.success('Account updated');
       } else {

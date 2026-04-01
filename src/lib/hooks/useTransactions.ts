@@ -53,6 +53,3 @@ export function useTransactions(filters: TransactionFilters = {}): Transaction[]
   ]);
 }
 
-export function useTransaction(id: string): Transaction | undefined {
-  return useLiveQuery(() => db.transactions.get(id), [id]);
-}

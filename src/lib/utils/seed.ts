@@ -199,7 +199,6 @@ export async function seedDefaultData(): Promise<void> {
   const existingCategories = await db.categories.count();
   if (existingCategories > 0) return;
 
-  const now = new Date().toISOString();
 
   // Seed expense parent categories
   const expenseCategoryMap: Record<string, string> = {};
@@ -247,6 +246,4 @@ export async function seedDefaultData(): Promise<void> {
     };
     await db.settings.add(defaultSettings);
   }
-
-  void now; // suppress unused var
 }

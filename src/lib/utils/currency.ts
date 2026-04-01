@@ -14,32 +14,6 @@ export function formatAmount(amount: number, showCents = true): string {
   }).format(amount);
 }
 
-export async function fetchExchangeRates(
-  baseCurrency: string,
-): Promise<Record<string, number>> {
-  try {
-    const response = await fetch(
-      `https://api.frankfurter.app/latest?from=${baseCurrency}`,
-    );
-    const data = await response.json();
-    return { ...data.rates, [baseCurrency]: 1 };
-  } catch {
-    return { [baseCurrency]: 1 };
-  }
-}
-
-export function convertCurrency(
-  amount: number,
-  fromCurrency: string,
-  toCurrency: string,
-  rates: Record<string, number>,
-): number {
-  if (fromCurrency === toCurrency) return amount;
-  const fromRate = rates[fromCurrency] || 1;
-  const toRate = rates[toCurrency] || 1;
-  return (amount / fromRate) * toRate;
-}
-
 export const SUPPORTED_CURRENCIES = [
   { code: 'USD', name: 'US Dollar', symbol: '$' },
   { code: 'EUR', name: 'Euro', symbol: '€' },

@@ -111,7 +111,9 @@ export default function DashboardPage() {
 
   const monthKey = getCurrentMonthKey();
   const monthStart = `${monthKey}-01`;
-  const monthEnd = `${monthKey}-31`;
+  const [year, mon] = monthKey.split('-').map(Number);
+  const lastDay = new Date(year, mon, 0).getDate();
+  const monthEnd = `${monthKey}-${String(lastDay).padStart(2, '0')}`;
 
   const accounts = useLiveQuery(() => db.accounts.filter(item => !item.isArchived).toArray());
   const allTransactions = useLiveQuery(() => db.transactions.orderBy('date').reverse().toArray());

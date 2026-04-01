@@ -258,18 +258,18 @@ function CategoryItem({
           <button
             onClick={() => onEdit(cat.id)}
             className="p-2 rounded-lg transition-colors"
-            style={{ color: '#8888a0' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#22223a'; (e.currentTarget as HTMLElement).style.color = '#e8e8f0'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#8888a0'; }}
+            style={{ color: '#c0c0d8', backgroundColor: '#22223a' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#2a2a40'; (e.currentTarget as HTMLElement).style.color = '#ffffff'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#22223a'; (e.currentTarget as HTMLElement).style.color = '#c0c0d8'; }}
           >
             <Pencil className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onArchive(cat.id)}
             className="p-2 rounded-lg transition-colors"
-            style={{ color: '#8888a0' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#ef444420'; (e.currentTarget as HTMLElement).style.color = '#ef4444'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#8888a0'; }}
+            style={{ color: '#f87171', backgroundColor: '#ef444418' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#ef444430'; (e.currentTarget as HTMLElement).style.color = '#ef4444'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#ef444418'; (e.currentTarget as HTMLElement).style.color = '#f87171'; }}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -311,19 +311,19 @@ function CategoryItem({
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   onClick={() => onEdit(child.id)}
-                  className="p-1.5 rounded-lg transition-colors"
-                  style={{ color: '#8888a0' }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#22223a'; (e.currentTarget as HTMLElement).style.color = '#e8e8f0'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#8888a0'; }}
+                  className="p-2 md:p-1.5 rounded-lg transition-colors"
+                  style={{ color: '#c0c0d8', backgroundColor: '#1a1a2e' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#22223a'; (e.currentTarget as HTMLElement).style.color = '#ffffff'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#1a1a2e'; (e.currentTarget as HTMLElement).style.color = '#c0c0d8'; }}
                 >
                   <Pencil className="w-3 h-3" />
                 </button>
                 <button
                   onClick={() => onArchive(child.id)}
-                  className="p-1.5 rounded-lg transition-colors"
-                  style={{ color: '#8888a0' }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#ef444420'; (e.currentTarget as HTMLElement).style.color = '#ef4444'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#8888a0'; }}
+                  className="p-2 md:p-1.5 rounded-lg transition-colors"
+                  style={{ color: '#f87171', backgroundColor: '#ef444418' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#ef444430'; (e.currentTarget as HTMLElement).style.color = '#ef4444'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#ef444418'; (e.currentTarget as HTMLElement).style.color = '#f87171'; }}
                 >
                   <Trash2 className="w-3 h-3" />
                 </button>
@@ -363,8 +363,6 @@ export default function CategoriesPage() {
       toast.success('Category archived');
     }
   };
-
-  const tabColor = tab === 'income' ? '#22c55e' : '#ef4444';
 
   return (
     <div className="space-y-5 max-w-2xl">

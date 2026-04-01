@@ -8,6 +8,3 @@ export function useAccounts(): Account[] | undefined {
   );
 }
 
-export function useAccount(id: string): Account | undefined {
-  return useLiveQuery(() => db.accounts.get(id), [id]);
-}

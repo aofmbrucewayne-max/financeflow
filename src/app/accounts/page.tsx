@@ -163,23 +163,23 @@ export default function AccountsPage() {
                       </span>
                     </div>
                   </div>
-                  {/* Actions */}
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Actions — always visible on mobile, hover on desktop */}
+                  <div className="flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => openEdit(acc.id)}
-                      className="p-1.5 rounded-lg"
-                      style={{ color: '#8888a0' }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#22223a'; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+                      className="p-2 md:p-1.5 rounded-lg transition-colors"
+                      style={{ color: '#c0c0d8', backgroundColor: '#22223a' }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#2a2a40'; (e.currentTarget as HTMLElement).style.color = '#ffffff'; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#22223a'; (e.currentTarget as HTMLElement).style.color = '#c0c0d8'; }}
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleArchive(acc.id)}
-                      className="p-1.5 rounded-lg"
-                      style={{ color: '#8888a0' }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#22223a'; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+                      className="p-2 md:p-1.5 rounded-lg transition-colors"
+                      style={{ color: '#f87171', backgroundColor: '#ef444418' }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#ef444430'; (e.currentTarget as HTMLElement).style.color = '#ef4444'; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#ef444418'; (e.currentTarget as HTMLElement).style.color = '#f87171'; }}
                     >
                       <Archive className="w-3.5 h-3.5" />
                     </button>
