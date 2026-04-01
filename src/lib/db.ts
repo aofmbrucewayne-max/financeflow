@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
+import dexieCloud from 'dexie-cloud-addon';
 import type {
   Account,
   Category,
@@ -23,7 +24,9 @@ export class FinanceDB extends Dexie {
   settings!: EntityTable<UserSettings, 'id'>;
 
   constructor() {
-    super('FinanceFlow');
+    super('FinanceFlow', {
+      addons: [dexieCloud],
+    });
     this.version(1).stores({
       accounts: 'id, type, currency, isArchived, createdAt',
       categories: 'id, type, parentId, isArchived, sortOrder',
@@ -34,6 +37,11 @@ export class FinanceDB extends Dexie {
       tags: 'id, name',
       exchangeRates: '++id, baseCurrency',
       settings: '++id',
+    });
+
+    this.cloud.configure({
+      databaseUrl: 'https://zpqvn0kac.dexie.cloud',
+      requireAuth: false, // App works without login, sync when logged in
     });
   }
 }

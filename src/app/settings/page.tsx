@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useObservable } from 'dexie-react-hooks';
 import { toast } from 'sonner';
-import { FlaskConical, Trash2, Download, Upload, Palette } from 'lucide-react';
+import { FlaskConical, Trash2, Download, Upload, Palette, Cloud, LogIn, LogOut } from 'lucide-react';
 import { db } from '@/lib/db';
 import { seedDemoData } from '@/lib/utils/demoSeed';
 import { useThemeStore } from '@/lib/stores/themeStore';
@@ -14,6 +15,9 @@ export default function SettingsPage() {
   const c = useThemeStore((s) => s.colors);
   const themeId = useThemeStore((s) => s.themeId);
   const setTheme = useThemeStore((s) => s.setTheme);
+
+  const currentUser = useObservable(db.cloud.currentUser);
+  const isLoggedIn = currentUser?.isLoggedIn ?? false;
 
   const handleLoadDemo = async () => {
     if (!confirm('This will replace all your accounts, transactions, budgets and goals with demo data. Continue?')) return;
@@ -137,6 +141,61 @@ export default function SettingsPage() {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* Cloud Sync */}
+      <section className="rounded-2xl overflow-hidden" style={{ backgroundColor: c.bgSecondary, border: `1px solid ${c.borderDefault}` }}>
+        <div className="px-6 py-4" style={{ borderBottom: `1px solid ${c.borderDefault}` }}>
+          <div className="flex items-center gap-2">
+            <Cloud className="w-4 h-4" style={{ color: c.accent }} />
+            <h2 className="text-sm font-semibold" style={{ color: c.textPrimary }}>Cloud Sync</h2>
+          </div>
+          <p className="text-xs mt-0.5" style={{ color: c.textTertiary }}>
+            Sync your data across devices. Login to enable.
+          </p>
+        </div>
+        <div className="px-6 py-5">
+          {isLoggedIn ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{ backgroundColor: '#22c55e20' }}>
+                  ✅
+                </div>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: c.textPrimary }}>Syncing</p>
+                  <p className="text-xs" style={{ color: c.textSecondary }}>{currentUser?.email}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => db.cloud.logout()}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                style={{ backgroundColor: '#ef444420', color: '#ef4444', border: '1px solid #ef444440' }}
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div
+                className="rounded-xl p-4 text-sm"
+                style={{ backgroundColor: c.accent + '15', border: `1px solid ${c.accent}30`, color: c.accent }}
+              >
+                Login to sync data between your iPhone, PC, and any other device automatically.
+              </div>
+              <button
+                onClick={() => db.cloud.login()}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                style={{ backgroundColor: c.accent, color: '#fff' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.accentHover; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.accent; }}
+              >
+                <LogIn className="w-4 h-4" />
+                Login with Email
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
