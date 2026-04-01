@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Mail, KeyRound, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '@/lib/db';
 import { useThemeStore } from '@/lib/stores/themeStore';
 
-type Step = 'email' | 'otp' | null;
+type Step = 'email' | 'otp';
 
 interface CloudLoginModalProps {
   isOpen: boolean;
@@ -18,21 +18,60 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [otpId, setOtpId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const resolveInteraction = useRef<((params: Record<string, string>) => void) | null>(null);
+
+  // Listen for Dexie Cloud's userInteraction to handle OTP step
+  useEffect(() => {
+    if (!isOpen) return;
+    const sub = db.cloud.userInteraction.subscribe((ia) => {
+      if (!ia) return;
+      if (ia.type === 'otp') {
+        setStep('otp');
+        setLoading(false);
+        setError('');
+        resolveInteraction.current = ia.onSubmit as (params: Record<string, string>) => void;
+      } else if (ia.type === 'email') {
+        // Dexie is asking for email — auto-submit if we have it
+        if (email) {
+          (ia.onSubmit as (params: Record<string, string>) => void)({ email: email.trim() });
+        }
+      } else if (ia.type === 'message-alert') {
+        // Error or info from Dexie Cloud
+        const alerts = (ia as { alerts?: { message: string }[] }).alerts;
+        if (alerts?.length) {
+          setError(alerts.map((a: { message: string }) => a.message).join('. '));
+          setLoading(false);
+        }
+      }
+    });
+    return () => sub.unsubscribe();
+  }, [isOpen, email]);
+
+  // Watch for login completion
+  useEffect(() => {
+    if (!isOpen) return;
+    const sub = db.cloud.currentUser.subscribe((user) => {
+      if (user?.isLoggedIn) {
+        toast.success(`Syncing as ${user.email}`);
+        resetAndClose();
+      }
+    });
+    return () => sub.unsubscribe();
+  }, [isOpen]);
 
   const resetAndClose = () => {
     setStep('email');
     setEmail('');
     setOtp('');
-    setOtpId('');
     setError('');
     setLoading(false);
+    resolveInteraction.current = null;
     onClose();
   };
 
-  const handleSendOtp = async () => {
+  const handleSendEmail = async () => {
     if (!email.trim() || !email.includes('@')) {
       setError('Please enter a valid email address');
       return;
@@ -40,51 +79,33 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
     setLoading(true);
     setError('');
     try {
-      // Request OTP from Dexie Cloud
-      const res = await fetch('https://zpqvn0kac.dexie.cloud/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          grant_type: 'otp',
-          email: email.trim(),
-          scopes: ['ACCESS_DB'],
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || data.error || 'Failed to send OTP');
-      }
-      setOtpId(data.otp_id || '');
-      setStep('otp');
-      toast.success('Verification code sent to your email');
+      // This triggers the Dexie Cloud login flow.
+      // It will emit on userInteraction observable for OTP step.
+      db.cloud.login({ email: email.trim(), grant_type: 'otp' });
     } catch (err) {
-      console.error('OTP request failed:', err);
-      setError(String(err instanceof Error ? err.message : 'Failed to send code. Check your connection.'));
-    } finally {
+      console.error('Login error:', err);
+      setError(String(err instanceof Error ? err.message : 'Failed to start login'));
       setLoading(false);
     }
   };
 
-  const handleVerifyOtp = async () => {
+  const handleVerifyOtp = () => {
     if (!otp.trim()) {
       setError('Please enter the verification code');
       return;
     }
     setLoading(true);
     setError('');
-    try {
-      await db.cloud.login({
-        grant_type: 'otp',
+    if (resolveInteraction.current) {
+      // Submit OTP through Dexie's interaction handler
+      resolveInteraction.current({ otp: otp.trim() });
+    } else {
+      // Fallback: try direct login with OTP
+      db.cloud.login({
         email: email.trim(),
+        grant_type: 'otp',
         otp: otp.trim(),
-        otpId: otpId,
       });
-      toast.success('Logged in! Your data will sync across devices.');
-      resetAndClose();
-    } catch (err) {
-      console.error('OTP verify failed:', err);
-      setError(String(err instanceof Error ? err.message : 'Invalid code. Please try again.'));
-      setLoading(false);
     }
   };
 
@@ -135,7 +156,7 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleSendOtp(); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSendEmail(); }}
                 autoFocus
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none"
                 style={{
@@ -191,7 +212,7 @@ export function CloudLoginModal({ isOpen, onClose }: CloudLoginModalProps) {
             Cancel
           </button>
           <button
-            onClick={step === 'email' ? handleSendOtp : handleVerifyOtp}
+            onClick={step === 'email' ? handleSendEmail : handleVerifyOtp}
             disabled={loading}
             className="flex-1 py-3 rounded-xl text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
             style={{ background: c.gradient, color: '#fff' }}
