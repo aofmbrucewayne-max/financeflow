@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useObservable } from 'dexie-react-hooks';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { FlaskConical, Trash2, Download, Upload, Palette, Cloud, LogIn, LogOut } from 'lucide-react';
+import { FlaskConical, Trash2, Download, Upload, Palette, Cloud, LogIn, LogOut, RefreshCw } from 'lucide-react';
 import { db } from '@/lib/db';
 import { seedDemoData } from '@/lib/utils/demoSeed';
 import { useThemeStore } from '@/lib/stores/themeStore';
@@ -16,8 +15,45 @@ export default function SettingsPage() {
   const themeId = useThemeStore((s) => s.themeId);
   const setTheme = useThemeStore((s) => s.setTheme);
 
-  const currentUser = useObservable(db.cloud.currentUser);
-  const isLoggedIn = currentUser?.isLoggedIn ?? false;
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const checkLoginStatus = useCallback(() => {
+    const sub = db.cloud.currentUser.subscribe((user) => {
+      setIsLoggedIn(user?.isLoggedIn ?? false);
+      setUserEmail(user?.email ?? null);
+    });
+    return sub;
+  }, []);
+
+  useEffect(() => {
+    const sub = checkLoginStatus();
+    return () => sub.unsubscribe();
+  }, [checkLoginStatus]);
+
+  const handleLogin = async () => {
+    try {
+      setSyncing(true);
+      await db.cloud.login();
+      toast.success('Logged in! Your data will sync across devices.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Login failed. Please try again.');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await db.cloud.logout();
+      toast.success('Logged out');
+    } catch (err) {
+      console.error(err);
+      toast.error('Logout failed');
+    }
+  };
 
   const handleLoadDemo = async () => {
     if (!confirm('This will replace all your accounts, transactions, budgets and goals with demo data. Continue?')) return;
@@ -164,11 +200,11 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium" style={{ color: c.textPrimary }}>Syncing</p>
-                  <p className="text-xs" style={{ color: c.textSecondary }}>{currentUser?.email}</p>
+                  <p className="text-xs" style={{ color: c.textSecondary }}>{userEmail}</p>
                 </div>
               </div>
               <button
-                onClick={() => db.cloud.logout()}
+                onClick={handleLogout}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
                 style={{ backgroundColor: '#ef444420', color: '#ef4444', border: '1px solid #ef444440' }}
               >
@@ -185,14 +221,15 @@ export default function SettingsPage() {
                 Login to sync data between your iPhone, PC, and any other device automatically.
               </div>
               <button
-                onClick={() => db.cloud.login()}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                onClick={handleLogin}
+                disabled={syncing}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-50"
                 style={{ backgroundColor: c.accent, color: '#fff' }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.accentHover; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.accent; }}
+                onMouseEnter={(e) => { if (!syncing) (e.currentTarget as HTMLElement).style.backgroundColor = c.accentHover; }}
+                onMouseLeave={(e) => { if (!syncing) (e.currentTarget as HTMLElement).style.backgroundColor = c.accent; }}
               >
-                <LogIn className="w-4 h-4" />
-                Login with Email
+                {syncing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
+                {syncing ? 'Connecting...' : 'Login with Email'}
               </button>
             </div>
           )}
