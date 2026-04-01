@@ -60,7 +60,7 @@ export function TransactionRow({
             className="text-sm font-medium truncate"
             style={{ color: '#e8e8f0' }}
           >
-            {category?.name ?? 'Uncategorized'}
+            {isTransfer ? 'Transfer' : (category?.name ?? 'Uncategorized')}
           </span>
           {transaction.tags.length > 0 && (
             <div className="flex gap-1 hidden sm:flex">
