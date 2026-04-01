@@ -7,6 +7,7 @@ import { db } from '@/lib/db';
 import { seedDemoData } from '@/lib/utils/demoSeed';
 import { useThemeStore } from '@/lib/stores/themeStore';
 import { themeMetas } from '@/lib/themes';
+import { CloudLoginModal } from '@/components/cloud/CloudLoginModal';
 
 export default function SettingsPage() {
   const [loadingDemo, setLoadingDemo] = useState(false);
@@ -18,33 +19,18 @@ export default function SettingsPage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [syncStatus, setSyncStatus] = useState('unknown');
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   useEffect(() => {
     const userSub = db.cloud.currentUser.subscribe((user) => {
-      const loggedIn = user?.isLoggedIn ?? false;
-      setIsLoggedIn(loggedIn);
+      setIsLoggedIn(user?.isLoggedIn ?? false);
       setUserEmail(user?.email ?? null);
-      if (loggedIn && user?.email) {
-        toast.success(`Logged in as ${user.email}`);
-      }
     });
     const syncSub = db.cloud.syncState.subscribe((state) => {
       setSyncStatus(state?.phase ?? state?.status ?? 'unknown');
     });
     return () => { userSub.unsubscribe(); syncSub.unsubscribe(); };
   }, []);
-
-  const handleLogin = () => {
-    // With customLoginGui: true, this triggers db.cloud.userInteraction
-    // which CloudLoginModal listens to and renders the email/OTP dialog
-    try {
-      db.cloud.login();
-      toast.info('Opening login...');
-    } catch (err) {
-      console.error('Login error:', err);
-      toast.error('Login failed: ' + String(err));
-    }
-  };
 
   const handleLogout = async () => {
     try {
@@ -225,7 +211,7 @@ export default function SettingsPage() {
                 Login to sync data between your iPhone, PC, and any other device automatically.
               </div>
               <button
-                onClick={handleLogin}
+                onClick={() => setLoginModalOpen(true)}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors"
                 style={{ backgroundColor: c.accent, color: '#fff' }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = c.accentHover; }}
@@ -316,6 +302,7 @@ export default function SettingsPage() {
           </button>
         </div>
       </section>
+      <CloudLoginModal isOpen={loginModalOpen} onClose={() => setLoginModalOpen(false)} />
     </div>
   );
 }
