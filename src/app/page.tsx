@@ -334,12 +334,17 @@ export default function DashboardPage() {
               </div>
             ) : (
               accounts?.map((acc) => {
-                const txTotal = allTransactions?.filter((tx) => tx.accountId === acc.id)
-                  .reduce((s, tx) => {
-                    if (tx.type === 'income') return s + tx.amount;
-                    if (tx.type === 'expense') return s - tx.amount;
-                    return s;
-                  }, 0) ?? 0;
+                let txTotal = 0;
+                allTransactions?.forEach((tx) => {
+                  if (tx.accountId === acc.id) {
+                    if (tx.type === 'income') txTotal += tx.amount;
+                    else if (tx.type === 'expense') txTotal -= tx.amount;
+                    else if (tx.type === 'transfer') txTotal -= tx.amount;
+                  }
+                  if (tx.type === 'transfer' && tx.toAccountId === acc.id) {
+                    txTotal += tx.amount;
+                  }
+                });
                 const balance = acc.initialBalance + txTotal;
                 return (
                   <div key={acc.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: c.bgTertiary }}>
