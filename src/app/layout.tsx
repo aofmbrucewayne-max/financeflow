@@ -49,7 +49,7 @@ export default function RootLayout({
         <Sidebar />
 
         {/* Desktop: offset sidebar. Mobile: offset top bar + bottom nav */}
-        <main className="md:ml-60 pt-14 md:pt-0 pb-20 md:pb-0 min-h-screen">
+        <main className="md:ml-60 pt-14 md:pt-0 pb-24 md:pb-0 min-h-screen">
           <div className="max-w-[1400px] mx-auto p-4 md:p-6">
             {children}
           </div>

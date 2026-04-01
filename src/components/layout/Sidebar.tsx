@@ -112,25 +112,39 @@ export function Sidebar() {
         </div>
       </header>
 
-      {/* ── Mobile Bottom Nav (horizontally scrollable) ──────── */}
+      {/* ── Mobile Floating Bottom Nav ──────── */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40"
+        className="md:hidden fixed z-40"
         style={{
-          backgroundColor: '#12121a',
-          borderTop: '1px solid #2a2a40',
-          paddingBottom: 'env(safe-area-inset-bottom)',
+          bottom: 'calc(12px + env(safe-area-inset-bottom))',
+          left: '12px',
+          right: '12px',
         }}
       >
-        <div className="flex items-center overflow-x-auto scrollbar-none px-1 h-[58px]"
-          style={{ scrollbarWidth: 'none' }}>
+        <div
+          className="flex items-center overflow-x-auto scrollbar-none px-2 h-[56px] gap-1"
+          style={{
+            backgroundColor: 'rgba(18, 18, 26, 0.92)',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            borderRadius: '20px',
+            border: '1px solid rgba(124, 58, 237, 0.2)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(255,255,255,0.05) inset',
+            scrollbarWidth: 'none',
+          }}
+        >
           {mobileNavItems.map(({ label, href, icon: Icon }) => {
             const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
             return (
               <Link
                 key={href}
                 href={href}
-                className="flex flex-col items-center justify-center gap-0.5 shrink-0 px-3 py-1 rounded-xl transition-colors min-w-[60px]"
-                style={{ color: isActive ? '#7c3aed' : '#555570' }}
+                className="flex flex-col items-center justify-center gap-0.5 shrink-0 px-3 py-1.5 rounded-2xl transition-all min-w-[54px]"
+                style={
+                  isActive
+                    ? { color: '#ffffff', backgroundColor: '#7c3aed30' }
+                    : { color: '#666680' }
+                }
               >
                 <Icon className="w-5 h-5" />
                 <span className="text-[9px] font-medium whitespace-nowrap">{label}</span>
